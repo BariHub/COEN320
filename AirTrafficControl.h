@@ -12,6 +12,7 @@ public:
 	AirTrafficControl();
 	~AirTrafficControl();
 
+	int generateData(int);
 	int importData();
 	void printInfo() const;
 
