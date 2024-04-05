@@ -9,7 +9,6 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-
 Radar::Radar() = default;
 
 Radar::Radar(const std::vector<Plane>& planes) : planes(planes) {}
@@ -52,7 +51,7 @@ std::vector<AircraftPositionResponse> Radar::pingMultiplePlanes(const std::vecto
     return responses;
 }
 
-// signal a plane and get its response
+// signal one plane and get its response
 AircraftPositionResponse Radar::signalPlane(const Plane& plane) {
     AircraftPositionResponse response;
     // connect to the plane's channel
@@ -71,29 +70,21 @@ AircraftPositionResponse Radar::signalPlane(const Plane& plane) {
             response.speedX = plane.getXSpeed();
             response.speedY = plane.getYSpeed();
             response.speedZ = plane.getZSpeed();
+        } else {
+            cerr << "Failed to send signal to the plane" << endl;
+            response.x = response.y = response.z = 0.0;
+            response.flightLevel = 0;
+            response.speedX = response.speedY = response.speedZ = 0;
         }
         // detach from channel
         ConnectDetach(connectionID);
     } else {
-        cerr << "Failed to attach to plane's channel\n";
+        cerr << "Failed to attach to plane's channel" << endl;
+        response.x = response.y = response.z = 0.0;
+        response.flightLevel = 0;
+        response.speedX = response.speedY = response.speedZ = 0;
     }
     return response;
-}
-
-// send aircraft data via message passing to computer system
-bool Radar::sendAircraftData(const AircraftData& data) {
-    int connectionID = ConnectAttach(0, 0, CHANNEL_ID, _NTO_SIDE_CHANNEL, 0);
-    if (connectionID != -1) {
-        if (MsgSend(connectionID, &data, sizeof(data), NULL, 0) != -1) {
-            ConnectDetach(connectionID);
-            return true;
-        }
-        cerr << "Failed to send aircraft data" << endl;
-        ConnectDetach(connectionID);
-    } else {
-        cerr << "Failed to attach to computer system channel" << endl;
-    }
-    return false;
 }
 
 // collect and send data for all planes monitored by radar
@@ -113,7 +104,26 @@ void Radar::collectAndSendAircraftData() {
 
         // send aircraft data
         if (!sendAircraftData(data)) {
-            // have to handle failure to send data
+
+            cerr << "Failed to send aircraft data for plane with ID: " << plane.getFlightId() << endl;
         }
+    }
+}
+
+// send aircraft data via message passing to computer system
+bool Radar::sendAircraftData(const AircraftData& data) {
+    int connectionID = ConnectAttach(0, 0, CHANNEL_ID, _NTO_SIDE_CHANNEL, 0);
+    if (connectionID != -1) {
+        if (MsgSend(connectionID, &data, sizeof(data), NULL, 0) != -1) {
+            ConnectDetach(connectionID);
+            return true;
+        } else {
+            cerr << "Failed to send aircraft data" << endl;
+            ConnectDetach(connectionID);
+            return false;
+        }
+    } else {
+        cerr << "Failed to attach to computer system channel" << endl;
+        return false;
     }
 }
