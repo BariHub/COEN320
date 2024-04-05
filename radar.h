@@ -3,21 +3,35 @@
 
 #include <vector>
 
-using namespace std;
+class Plane;
+
+struct AircraftPositionResponse {
+    int x;
+    int y;
+    int z;
+    int flightLevel;
+    int speedX;
+    int speedY;
+    int speedZ;
+};
+
+struct PlaneCommandMessage {
+    int command;
+};
 
 class Radar {
 public:
     Radar();
-    explicit Radar(const vector<Plane>& planes);
+    explicit Radar(const std::vector<Plane>& planes);
     ~Radar();
 
-    vector<pair<int, AircraftPositionResponse>> collectPlaneData();
+    std::vector<std::pair<int, AircraftPositionResponse>> collectPlaneData();
     bool pingPlane(int flightID, AircraftPositionResponse* out);
-    vector<AircraftPositionResponse> signalMultiplePlanes(const vector<Plane>& selectedPlanes);
+    std::vector<AircraftPositionResponse> pingMultiplePlanes(const std::vector<Plane>& selectedPlanes);
 
 private:
-    vector<Plane> planes;
+    std::vector<Plane> planes;
     AircraftPositionResponse signalPlane(const Plane& plane);
 };
 
-#endif
+#endif // RADAR_H
