@@ -1,80 +1,69 @@
 #include "Radar.h"
 #include <iostream>
-#include <vector>
 #include <cmath>
 #include <sys/netmgr.h>
 #include <sys/neutrino.h>
 
-using namespace std;
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::vector;
 
-class AircraftPositionResponse {
-public:
-    int x, y, z;
-    int flightLevel;
-    int speedX, speedY, speedZ;
-};
 
-class Radar {
-    // tracking planes with radar
-    vector<Plane> planes;
+Radar::Radar() = default;
 
-public:
-    Radar() = default;
-    explicit Radar(const vector<Plane>& planes) : planes(planes) {}
-    ~Radar() = default;
+Radar::Radar(const std::vector<Plane>& planes) : planes(planes) {}
 
-    // collect plane data with flight ID and data
-    vector<pair<int, AircraftPositionResponse>> collectPlaneData();
+Radar::~Radar() = default;
 
-    // try to find plane with flight ID and data
-    bool pingPlane(int flightID, AircraftPositionResponse* out);
-
-    // for sending signal to multiple planes and collecting their response
-    vector<AircraftPositionResponse> pingMultiplePlanes(const vector<Plane>& selectedPlanes);
-
-private:
-    // for collecting response from a single aircraft
-    AircraftPositionResponse signalPlane(const Plane& plane);
-};
-
-// iterate over planes tracked, signal them and store flightID
-vector<pair<int, AircraftPositionResponse>> Radar::collectPlaneData() {
-    vector<pair<int, AircraftPositionResponse>> planeData;
+// to collect data for all planes monitored by radar
+std::vector<std::pair<int, AircraftPositionResponse>> Radar::collectPlaneData() {
+    std::vector<std::pair<int, AircraftPositionResponse>> planeData;
     for (const auto& plane : planes) {
+        // signal plane and get its response
         AircraftPositionResponse response = signalPlane(plane);
+        // store response along with plane's flight ID
         planeData.emplace_back(plane.getFlightId(), response);
     }
     return planeData;
 }
 
-// searching for plane using flightID in tracking list
+// collect data from a specific plane
 bool Radar::pingPlane(int flightID, AircraftPositionResponse* out) {
+    // check if plane's flight ID matches requested ID
     for (const auto& plane : planes) {
         if (plane.getFlightId() == flightID) {
+            // signal plane and get its response
             *out = signalPlane(plane);
             return true;
         }
     }
+    // if requested id is not found
     return false;
 }
 
-// collecting responses from multiple planes
-vector<AircraftPositionResponse> Radar::pingMultiplePlanes(const vector<Plane>& selectedPlanes) {
-    vector<AircraftPositionResponse> responses;
+// collect data for a specific subset of planes and get their responses
+std::vector<AircraftPositionResponse> Radar::pingMultiplePlanes(const std::vector<Plane>& selectedPlanes) {
+    std::vector<AircraftPositionResponse> responses;
     for (const auto& plane : selectedPlanes) {
+        // signal each plane to get its response
         responses.push_back(signalPlane(plane));
     }
     return responses;
 }
 
-// communicate with plane to request its data
+// signal a plane and get its response
 AircraftPositionResponse Radar::signalPlane(const Plane& plane) {
     AircraftPositionResponse response;
-    // create connection channel with plane
+    // connect to the plane's channel
     int connectionID = ConnectAttach(0, 0, plane.getChannelID(), _NTO_SIDE_CHANNEL, 0);
+    // check if connection is successful
     if (connectionID != -1) {
+        // create a message to signal the plane
         PlaneCommandMessage msg = {COMMAND_RADAR_SIGNAL};
+        // send the message and receive its response
         if (MsgSend(connectionID, &msg, sizeof(msg), &response, sizeof(response)) != -1) {
+            // get responses for position, FL, and speed
             response.x = plane.getXPosition();
             response.y = plane.getYPosition();
             response.z = plane.getZPosition();
@@ -83,7 +72,7 @@ AircraftPositionResponse Radar::signalPlane(const Plane& plane) {
             response.speedY = plane.getYSpeed();
             response.speedZ = plane.getZSpeed();
         }
-        // remove connection
+        // detach from channel
         ConnectDetach(connectionID);
     } else {
         cerr << "Failed to attach to plane's channel\n";
