@@ -79,3 +79,41 @@ AircraftPositionResponse Radar::signalPlane(const Plane& plane) {
     }
     return response;
 }
+
+// send aircraft data via message passing to computer system
+bool Radar::sendAircraftData(const AircraftData& data) {
+    int connectionID = ConnectAttach(0, 0, CHANNEL_ID, _NTO_SIDE_CHANNEL, 0);
+    if (connectionID != -1) {
+        if (MsgSend(connectionID, &data, sizeof(data), NULL, 0) != -1) {
+            ConnectDetach(connectionID);
+            return true;
+        }
+        cerr << "Failed to send aircraft data" << endl;
+        ConnectDetach(connectionID);
+    } else {
+        cerr << "Failed to attach to computer system channel" << endl;
+    }
+    return false;
+}
+
+// collect and send data for all planes monitored by radar
+void Radar::collectAndSendAircraftData() {
+    for (const auto& plane : planes) {
+        AircraftPositionResponse response = signalPlane(plane);
+
+        AircraftData data;
+        data.flightId = plane.getFlightId();
+        data.x = response.x;
+        data.y = response.y;
+        data.z = response.z;
+        data.flightLevel = response.flightLevel;
+        data.speedX = response.speedX;
+        data.speedY = response.speedY;
+        data.speedZ = response.speedZ;
+
+        // send aircraft data
+        if (!sendAircraftData(data)) {
+            // have to handle failure to send data
+        }
+    }
+}
