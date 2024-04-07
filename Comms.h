@@ -24,7 +24,7 @@ private:
 public:
 	pthread_t thread_id;
 	CommSystem();
-	int send_plane(planeMsg&);
+	int send_plane(MsgToPlane&);
 	int fromCompSys();
 	virtual ~CommSystem();
 };

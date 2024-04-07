@@ -22,29 +22,30 @@ CommSystem::CommSystem(){
 }
 
 //msg includes the command as well as the plane id to which this command is to be sent to
-int CommSystem::send_plane(planeMsg& msg){
+int CommSystem::send_plane(MsgToPlane& msg){
 	string Id = to_string(msg.ID);
 	char const *plane_ID = Id.c_str();
-	msg.header = 0x01; //means msg from compsys to change a parameter
-	serverId = name_open(plane_ID,0);
+	msg.header.type = 0x01; //means msg from compsys to plane, change speed
+	serverId = name_open(plane_ID, 0);
 
 	if(serverId == -1){
 		cout<<"Failed to connect to the aircraft!"<<endl;
 		return EXIT_FAILURE;
 	}
-	if(MsgSend(serverId, &msg, sizeof(msg),0,0) == -1){
-		cout<<"Failed to send the message!"<<endl;
+	if(MsgSend(serverId, &msg, sizeof(msg), 0, 0) == -1){
+		printf("Failed to send the message to ID: %d!\n", msg.ID);
 		return EXIT_FAILURE;
 	}
-	name_close(serverId);
+
+	name_close(serverId); // close connection
 	return EXIT_SUCCESS;
 }
 int CommSystem::fromCompSys(){
 	name_attach_t *attach;
-	planeMsg planeMsg;
+	MsgToPlane updateMsg;
 
 	if ((attach = name_attach(NULL, COMMUNICATION_SYSTEM_ATTACH_POINT, 0)) == NULL) {
-		perror("Error occurred while creating the channel");
+		perror("Error occurred while creating the channel in Communications");
 	}
 
 	/* Do your MsgReceive's here now with the chid */
@@ -52,7 +53,7 @@ int CommSystem::fromCompSys(){
 		/* Server will block in this call, until a client calls MsgSend to send a message to
 		 * this server through the channel named "myname", which is the name that we set for the channel,
 		 * i.e., the one that we stored at ATTACH_POINT and used in the name_attach call to create the channel. */
-		rcvrId = MsgReceive(attach->chid, &planeMsg, sizeof(planeMsg), NULL);
+		rcvrId = MsgReceive(attach->chid, &updateMsg, sizeof(updateMsg), NULL);
 
 		/* In the above call, the received message will be stored at planeMsgwhen the server receives a message.
 		 * Moreover, rcvid */
@@ -62,14 +63,14 @@ int CommSystem::fromCompSys(){
 		}
 
 		if (rcvrId == 0) {/* Pulse received */
-			switch (planeMsg.header.code) {
+			switch (updateMsg.header.code) {
 			case _PULSE_CODE_DISCONNECT:
 				/*
 				 * A client disconnected all its connections (called
 				 * name_close() for each name_open() of our name) or
 				 * terminated
 				 */
-				ConnectDetach(planeMsg.header.scoid);
+				ConnectDetach(updateMsg.header.scoid);
 				break;
 			case _PULSE_CODE_UNBLOCK:
 				/*
@@ -90,29 +91,27 @@ int CommSystem::fromCompSys(){
 		}
 
 		/* name_open() sends a connect message, must EOK this */
-		if (planeMsg.header.type == _IO_CONNECT ) {
+		if (updateMsg.header.type == _IO_CONNECT ) {
 			MsgReply( rcvrId, EOK, NULL, 0 );
 			continue;
 		}
 
 		/* Some other QNX IO message was received; reject it */
-		if (planeMsg.header.type > _IO_BASE && planeMsg.header.type <= _IO_MAX ) {
+		if (updateMsg.header.type > _IO_BASE && updateMsg.header.type <= _IO_MAX ) {
 			MsgError( rcvrId, ENOSYS );
 			continue;
 		}
 
 		//make sure header type indicates it comes from computer system
-		if (planeMsg.header.type == 0x01) {
-			send_Plane(planeMsg);
+		if (updateMsg.header.type == 0x01) {
+			send_plane(updateMsg);
 		}
 
 		MsgReply(rcvrId, EOK, 0, 0);
-
 	}
 
 	/* Remove the name from the space */
 	name_detach(attach, 0);
-
 	return EXIT_SUCCESS;
 }
 
