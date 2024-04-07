@@ -29,14 +29,17 @@ class CompSys {
 	int rcvrId;
 
 public:
-	vector<Plane> planes;
+	pthread_t thread_id;
+	vector<plane_info> planes;
 
 	CompSys();
-	vector<int> viollationVerification();
+	vector<int> violationVerification();
+	vector<float> NextPos(plane_info, plane_info, int);
 	int sendBaseInfo();
 	int listen();
 	int sendToDisplay(compSysToDispMsg Msg);
-	int sendToCommSys(planeMsg msg);
+	int sendToCommSys(MsgToPlane msg);
+	int log(char*, int);
 	virtual ~CompSys();
 };
 

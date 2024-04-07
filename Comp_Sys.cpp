@@ -30,22 +30,36 @@ CompSys::CompSys(){
 
 }
 //calculate position in 1 minute from current moment
-vector<float> CompSys::NextPos(Plane &a1, Plane &a2){
+vector<float> CompSys::NextPos(plane_info &a1, plane_info &a2, int n){
 
-	vector <float> a1Pos = a1.getPosition();
-	vector <float> a2Pos = a2.getPosition();
+	vector<float> pos1;
+	vector<float> pos2;
+	vector<float> vel1;
+	vector<float> vel2;
+	pos1.push_back(a1.PositionX);
+	pos1.push_back(a1.PositionY);
+	pos1.push_back(a1.PositionZ);
 
-	vector <float> a1Vel = a1.getVelocity();
-	vector <float> a2Vel = a2.getVelocity();
+	pos2.push_back(a2.PositionX);
+	pos2.push_back(a2.PositionY);
+	pos2.push_back(a2.PositionZ);
+
+	vel1.push_back(a1.VeloctyX);
+	vel1.push_back(a1.VeloctyY);
+	vel1.push_back(a1.VeloctyZ);
+
+	vel2.push_back(a2.VeloctyX);
+	vel2.push_back(a2.VeloctyY);
+	vel2.push_back(a2.VeloctyZ);
 
 	//Calculate postition after 60s
-	float locA1X = a1Pos[0] + a1Vel[0]*60;
-	float locA1Y = a1Pos[1] + a1Vel[1]*60;
-	float locA1Z = a1Pos[2] + a1Vel[2]*60;
+	float locA1X = pos1[0] + vel1[0]*n;
+	float locA1Y = pos1[1] + vel1[1]*n;
+	float locA1Z = pos1[2] + vel1[2]*n;
 
-	float locA2X = a2Pos[0] + a2Vel[0]*60;
-	float locA2Y = a2Pos[1] + a2Vel[1]*60;
-	float locA2Z = a2Pos[2] + a2Vel[2]*60;
+	float locA2X = pos2[0] + vel2[0]*n;
+	float locA2Y = pos2[1] + vel2[1]*n;
+	float locA2Z = pos2[2] + vel2[2]*n;
 
 	vector <float> dist;
 	dist.push_back(abs(locA1X-locA2X));
@@ -53,19 +67,22 @@ vector<float> CompSys::NextPos(Plane &a1, Plane &a2){
 	dist.push_back(abs(locA1Z-locA2Z));
 	return dist;
 }
-vector <int> CompSys::viollationVerification(){
+vector <int> CompSys::violationVerification(){
 	vector <int> volatingPlanes;
 	vector <float> distances;
+
 	for (int i=0; i<planes.size();i++){
 		for(int j=i+1;j<planes.size();j++){
 			//compute current violation
-			if(abs(planes[i].mPosition[0]-planes[j].mPosition[0]) < 3000 || abs(planes[i].mPosition[1]-planes[j].mPosition[1]) < 3000 || abs(planes[i].mPosition[2]-planes[j].mPosition[2]) <1000){
-							violatingPlanes.push_back(planes[i].mID);
-							violatingPlanes.push_back(planes[j].mID);
+			if(abs(planes[i].PositionX-planes[j].PositionX) < 3000 || abs(planes[i].PositionY-planes[j].PositionY) < 3000 ||
+					abs(planes[i].PositionZ-planes[j].PositionZ) <1000)
+			{
+				violatingPlanes.push_back(planes[i].mID);
+				violatingPlanes.push_back(planes[j].mID);
 			}
 			//Compute future violations in next 1 minute
 			distances = NextPos(planes[i], planes[j]);
-			if(distances[0] < 3000 || distances[1] < 3000 || distances[2] <1000){
+			if(distances[0] < 3000 || distances[1] < 3000 || distances[2] < 1000){
 				violatingPlanes.push_back(planes[i].mID);
 				violatingPlanes.push_back(planes[j].mID);
 			}
