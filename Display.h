@@ -30,11 +30,11 @@ class Display{
 
 public:
 	pthread_t thread_id;
-	vector<planeMsg> planeList;
+	vector<plane_info> planeList;
 	vector<int> violatingPairs;
 	Display();
 	int DisplayListen();
-	void gridDisplay(vector<planeMsg> planeList);
+	void gridDisplay(vector<plane_info> planeList);
 	virtual ~Display();
 
 };

@@ -25,7 +25,7 @@ Display::Display(){
 }
 int Display::DisplayListen(){
 	name_attach_t *attach;
-	compSysToDispMsg msg  //msg recieved from the computer system
+	compSysToDispMsg msg;  //msg recieved from the computer system
 	DispSysMsg dispMsg; //list of planes to display
 	/* Create a local name (/dev/name/local/...) */
 	if ((attach = name_attach(NULL, DISPLAY_ATTACH_POINT, 0)) == NULL) {
@@ -101,19 +101,19 @@ int Display::DisplayListen(){
 			    }
 		}
 		MsgReply(rcvrId, EOK, 0, 0);
-		cTimer timer(5,0,5,0);
+		cTimer timer(5,0);
 
-		girdDisplay(planeList);
+		gridDisplay(planeList);
 		timer.waitTimer();
 	}
 
 	/* Remove the name from the space */
 	name_detach(attach, 0);
 
-	return NULL;
+	return EXIT_SUCCESS;
 }
 
-void Display::gridDisplay(vector<Plane> planeList){
+void Display::gridDisplay(vector<plane_info> planeList){
 	const int x = 25;
 	const int y = 25;
 	const int z = 25;
@@ -128,16 +128,16 @@ void Display::gridDisplay(vector<Plane> planeList){
 	for(int i=0; i<sizeof(planeList); i++){
 		for(int j=0; j<x; j++){
 			//check if its in airspace boundaries in x direction
-			if(planeList[i].mPosition[0] >= (xyCellSize*j) &&
-					planeList[i].mPosition[0] <= (xyCellSize*(j+1))){
+			if(planeList[i].PositionX >= (xyCellSize*j) &&
+					planeList[i].PositionX <= (xyCellSize*(j+1))){
 				for(int k=0; k<y;k++){
 					//now check if its in boundaries in y direction
-					if(planeList[i].mPosition[1] >= (xyCellSize*k) &&
-										planeList[i].mPosition[1] <= (xyCellSize*(k+1))){
+					if(planeList[i].PositionY>= (xyCellSize*k) &&
+										planeList[i].PositionY <= (xyCellSize*(k+1))){
 						if(gridXY[j][k] != ""){
 							gridXY[j][k] += ",";
 						}
-						gridXY[j][k] += to_string(planeList[i].mID);
+						gridXY[j][k] += to_string(planeList[i].ID);
 					}
 				}
 			}
@@ -150,16 +150,16 @@ void Display::gridDisplay(vector<Plane> planeList){
 	for(int i=0; i<sizeof(planeList); i++){
 		for(int j=0; j<y; j++){
 			//check if its in airspace boundaries in x direction
-			if(planeList[i].mPosition[0] >= (xyCellSize*j) &&
-					planeList[i].mPosition[0] <= (xyCellSize*(j+1))){
+			if(planeList[i].PositionY >= (xyCellSize*j) &&
+					planeList[i].PositionY <= (xyCellSize*(j+1))){
 				for(int k=0; k<z;k++){
 					//now check if its in boundaries in y direction
-					if(planeList[i].mPosition[1] >= (zCellSize*k) &&
-										planeList[i].mPosition[1] <= (zCellSize*(k+1))){
+					if(planeList[i].PositionZ >= (zCellSize*k) &&
+										planeList[i].PositionZ <= (zCellSize*(k+1))){
 						if(gridYZ[j][k] != ""){
 							gridYZ[j][k] += ",";
 						}
-						gridYZ[j][k] += to_string(planeList[i].mID);
+						gridYZ[j][k] += to_string(planeList[i].ID);
 					}
 				}
 			}
@@ -171,16 +171,16 @@ void Display::gridDisplay(vector<Plane> planeList){
 	for(int i=0; i<sizeof(planeList); i++){
 		for(int j=0; j<y; j++){
 			//check if its in airspace boundaries in x direction
-			if(planeList[i].mPosition[0] >= (xyCellSize*j) &&
-					planeList[i].mPosition[0] <= (xyCellSize*(j+1))){
+			if(planeList[i].PositionX >= (xyCellSize*j) &&
+					planeList[i].PositionX <= (xyCellSize*(j+1))){
 				for(int k=0; k<z;k++){
 					//now check if its in boundaries in y direction
-					if(planeList[i].mPosition[1] >= (zCellSize*k) &&
-										planeList[i].mPosition[1] <= (zCellSize*(k+1))){
+					if(planeList[i].PositionZ >= (zCellSize*k) &&
+										planeList[i].PositionZ <= (zCellSize*(k+1))){
 						if(gridXZ[j][k] != ""){
 							gridXZ[j][k] += ",";
 						}
-						gridXZ[j][k] += to_string(planeList[i].mID);
+						gridXZ[j][k] += to_string(planeList[i].ID);
 					}
 				}
 			}
