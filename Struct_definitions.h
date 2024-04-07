@@ -7,7 +7,7 @@
 
 #ifndef STRUCT_DEFINITIONS_H_
 #define STRUCT_DEFINITIONS_H_
-#include "plane.h"
+#include "Plane.h"
 #include <vector>
 
 typedef struct _pulse msg_header_t;
@@ -21,19 +21,20 @@ typedef struct{
 	msg_header_t header;
 	int ID;
 	float positionX, positionY, positionZ, speedx, speedy, speedz;
-}planeMsg;
+}MsgToPlane; // planeMsg
 
 typedef struct{
 	msg_header_t header;
-	std:: vector <Plane> planeList;
+	std::vector<Plane> planeList;
 	std::vector<int> violatingPlanes;
 
 }compSysToDispMsg;
 
 typedef struct{
 	msg_header_t header;
-	int ID, altitude, speedx ,speedy ,speedz, positionz ,positionx;
-	std:: vector <Plane> planeList;
+	int ID;
+	float positionx, positiony, positionz, speedx ,speedy ,speedz;
+	std::vector<Plane> planeList;
 }compSysMsg;
 
 #endif /* STRUCT_DEFINITIONS_H_ */
