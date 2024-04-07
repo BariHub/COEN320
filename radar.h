@@ -1,37 +1,32 @@
-#ifndef RADAR_H
-#define RADAR_H
+#ifndef RADAR_H_
+#define RADAR_H_
 
 #include <vector>
+#include <string>
+#include "cTimer.h"
+#include "Struct_definitions.h"
+#include "Plane.h"
 
-class Plane;
-
-struct AircraftPositionResponse {
-    int x;
-    int y;
-    int z;
-    int flightLevel;
-    int speedX;
-    int speedY;
-    int speedZ;
-};
-
-struct PlaneCommandMessage {
-    int command;
-};
+#include <pthread.h>
 
 class Radar {
+private:
+    int server_coid;
+    pthread_t thread_id;
+    std::vector<int> airspace;
+    std::vector<planes_information> allPlaneData;
+
+    static void* radarRoutine(void* arg);
+    void startTracking();
+    void processAirspace(const std::vector<int>& airspace);
+    planes_information getPlaneData(int planeId);
+
 public:
     Radar();
-    explicit Radar(const std::vector<Plane>& planes);
-    ~Radar();
+    virtual ~Radar();
 
-    std::vector<std::pair<int, AircraftPositionResponse>> collectPlaneData();
-    bool pingPlane(int flightID, AircraftPositionResponse* out);
-    std::vector<AircraftPositionResponse> pingMultiplePlanes(const std::vector<Plane>& selectedPlanes);
-
-private:
-    std::vector<Plane> planes;
-    AircraftPositionResponse signalPlane(const Plane& plane);
+    void getAirspace();
+    int toComputerSys(compsys_msg data);
 };
 
-#endif // RADAR_H
+#endif // RADAR_H_
