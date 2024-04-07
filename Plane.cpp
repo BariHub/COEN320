@@ -98,7 +98,19 @@ const std::vector<float> Plane::getVelocity() const
 
 int Plane::updateLocation()
 {
+	plane_info info; // info of plane to be sent over
+	MsgToPlane pMsg; // msg to be received by plane object
+	std::string id = std::to_string(mID);
+	const char* plane_ID = id.c_str();
 	cTimer timer(1, 0); // update every 1 second
+
+	name_attach_t *attach = name_attach(NULL, plane_ID, 0);
+	if(attach == NULL)
+	{
+		printf("Could not attach plane ID: %d to channel", mID);
+		return EXIT_FAILURE;
+	}
+
 	while (mPosition[0] <= 100000 && mPosition[0] >= 0 && mPosition[1] <= 100000 && mPosition[1] >= 0 &&
 			mPosition[2] >= 15000 && mPosition[2] <= 40000) // if within airspace
 	{
@@ -111,10 +123,30 @@ int Plane::updateLocation()
 		this->mPosition[1] += mVelocity[1];
 		this->mPosition[2] += mVelocity[2];
 		//printf("Plane: %d %f %f %f \n", mID, mPosition[0], mPosition[1], mPosition[2]);
+		info = {mID, mPosition[0], mPosition[1], mPosition[2], mVelocity[0], mVelocity[1], mVelocity[2]};
+		recvID = MsgReceive(attach->chid, &pMsg, sizeof(pMsg), NULL); // see if anything received
+
+		if(pMsg.header.type == 0x00) // send info, if it wants it
+		{
+			MsgReply(recvID, EOK, &info, sizeof(info));
+		}
+		else if(pMsg.header.type == 0x01) // it is giving the plane info
+		{
+			printf("Commands received: speed change (%f, %f, %f)", pMsg.speedx, pMsg.speedy, pMsg.speedz);
+			setVelocity(pMsg.speedx, pMsg.speedy, pMsg.speedz);
+		}
+
 		timer.waitTimer(); // after updating, wait until timer is ready for next 1 second interval
 	}
 	mPlanesInAirSpace.erase(std::remove(mPlanesInAirSpace.begin(), mPlanesInAirSpace.end(), this->mID), mPlanesInAirSpace.end());
+	name_detach(attach, 0);
+	pthread_exit(NULL);
 	return 0;
+}
+
+const int Plane::getAirSpaceSize() const
+{
+	return mPlanesInAirSpace.size();
 }
 
 float distanceBetweenPlanes(const Plane& p1, const Plane& p2) { //distance between two planes function to send to computer sys

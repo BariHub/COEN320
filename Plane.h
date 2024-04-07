@@ -5,7 +5,9 @@
 #include <iostream>
 #include <math.h>
 #include <algorithm>
+#include <sys/dispatch.h>
 #include "cTimer.h"
+#include "Struct_definitions.h"
 
 class Plane
 {
@@ -19,10 +21,12 @@ public:
 	void setVelocity(float, float, float);
 	const std::vector<float> getPosition() const;
 	const std::vector<float> getVelocity() const;
+	const int getAirSpaceSize() const;
 
 	int updateLocation();
 
 	int mID;
+	int recvID;
 	float mTime;
 	pthread_t thread_id;
 	static std::vector<int> mPlanesInAirSpace;
