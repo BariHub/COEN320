@@ -110,7 +110,7 @@ int Plane::updateLocation()
 		this->mPosition[0] += mVelocity[0];
 		this->mPosition[1] += mVelocity[1];
 		this->mPosition[2] += mVelocity[2];
-		printf("Plane: %d %f %f %f \n", mID, mPosition[0], mPosition[1], mPosition[2]);
+		//printf("Plane: %d %f %f %f \n", mID, mPosition[0], mPosition[1], mPosition[2]);
 		timer.waitTimer(); // after updating, wait until timer is ready for next 1 second interval
 	}
 	mPlanesInAirSpace.erase(std::remove(mPlanesInAirSpace.begin(), mPlanesInAirSpace.end(), this->mID), mPlanesInAirSpace.end());
