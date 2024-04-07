@@ -13,6 +13,12 @@ using namespace std;
 #define DISPLAY_ATTACH_POINT "Display"
 #define COMMUNICATION_SYSTEM_ATTACH_POINT "CommunicationSystem"
 
+void* compSysStartRoutine(void *args){
+	CompSys& compSys = *(CompSys*) args;
+	compSys.listen();
+	return NULL;
+}
+
 CompSys::CompSys(){
 	this -> serverId = -1;
 	this -> listenId = -1;
@@ -67,21 +73,7 @@ vector <int> CompSys::viollationVerification(){
 	}
 	return violatinPlanes;
 }
-//sends alert to display system
-int CompSys::sendCollisionAlert(compSysToDispMsg Msg){
-	//CONNECTION TO SEND INFO TO THE DISPLAY SYSTMEM
-	if((serverId = name_open(DISPLAY_ATTACH_POINT,0)) ==-1){
-		cout<<"Couldn't create channel!"<<endl;
-		exit(EXIT_FAILURE);
-	}
-	if(MsgSend(server_id, &Msg, sizeof(Msg),0,0) == -1){
 
-		cout<<"Failed to send message!"<<endl;
-		return EXIT_FAILURE;
-	}
-	name_close(server_id);
-	return  EXIT_SUCCESS;
-}
 int CompSys::listen(){
 	compSysMsg planeInfo;
 	compSysToDispMsg Msg;
@@ -204,10 +196,4 @@ int CompSys::sendToCommSys(planeMsg msg){
 	name_close(serverId);
 	return EXIT_SUCCESS;
 }
-void* CompSys::compSysStartRoutine(void *args){
-	CompSys& compSys = *(CompSys*) args;
-	compSys.listen();
-	return NULL;
-}
-
 

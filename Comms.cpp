@@ -23,7 +23,8 @@ CommSystem::CommSystem(){
 
 //msg includes the command as well as the plane id to which this command is to be sent to
 int CommSystem::send_plane(planeMsg& msg){
-	string plane_ID = to_string(msg.ID);
+	string Id = to_string(msg.ID);
+	char const *plane_ID = Id.c_str();
 	msg.header = 0x01; //means msg from compsys to change a parameter
 	serverId = name_open(plane_ID,0);
 
