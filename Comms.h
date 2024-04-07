@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include "Struct_definitions.h"
-#include "plane.h"
+#include "Plane.h"
 #include "cTimer.h"
 
 class CommSystem{
@@ -22,10 +22,10 @@ private:
 	int rcvrId;
 
 public:
-	pthread_t ID;
+	pthread_t thread_id;
 	CommSystem();
-	int send_plane(plane_msg&);
+	int send_plane(planeMsg&);
 	int fromCompSys();
-	virtual ~ CommSystem();
+	virtual ~CommSystem();
 };
 #endif

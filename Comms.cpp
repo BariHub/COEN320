@@ -4,22 +4,29 @@ using namespace std;
 
 #define COMMUNICATION_SYSTEM_ATTACH_POINT "CommunicationSystem"
 
+void* commSysStartRoutine(void *args){
+	CommSystem& commSys = *(CommSystem*) args;
+	commSys.fromCompSys();
+	return NULL;
+}
+
 //Comms Class constructor
 CommSystem::CommSystem(){
 	this -> serverId = -1;
 	this -> rcvrId = -1;
 
 	if(pthread_create(&thread_id, NULL, commSysStartRoutine, (void *)this) != 0)
-		{
-			cout<<"Failed to start communication system thread!"<<endl;
-		}
+	{
+		cout<<"Failed to start communication system thread!"<<endl;
+	}
 }
 
 //msg includes the command as well as the plane id to which this command is to be sent to
-int CommSystem::send_plane(plane_msg& msg){
+int CommSystem::send_plane(planeMsg& msg){
 	string plane_ID = to_string(msg.ID);
 	msg.header = 0x01; //means msg from compsys to change a parameter
 	serverId = name_open(plane_ID,0);
+
 	if(serverId == -1){
 		cout<<"Failed to connect to the aircraft!"<<endl;
 		return EXIT_FAILURE;
@@ -107,9 +114,5 @@ int CommSystem::fromCompSys(){
 
 	return EXIT_SUCCESS;
 }
-void* CommSystem::commSysStartRoutine(void *args){
-	CommSystem& commSys = *(CommSystem*) args;
-	commSys.fromCompSys();
-	return NULL;
-}
+
 CommSystem::~CommSystem(){}
