@@ -25,16 +25,15 @@ typedef struct{
 
 typedef struct{
 	msg_header_t header;
-	std::vector<Plane> planeList;
+	std::vector<plane_info> planeList;
 	std::vector<int> violatingPlanes;
-
 }compSysToDispMsg;
 
 typedef struct{
 	msg_header_t header;
 	int ID;
 	float positionx, positiony, positionz, speedx ,speedy ,speedz;
-	std::vector<Plane> planeList;
+	std::vector<plane_info> planeList;
 }compSysMsg;
 
 #endif /* STRUCT_DEFINITIONS_H_ */
