@@ -221,5 +221,5 @@ void Display::gridDisplay(vector<plane_info> planeList){
 	}
 	cout<<endl;
 }
-
+Display::~Display(){}
 

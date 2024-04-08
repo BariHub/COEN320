@@ -14,19 +14,19 @@ private:
     int server_coid;
     pthread_t thread_id;
     std::vector<int> airspace;
-    std::vector<planes_information> allPlaneData;
+    std::vector<plane_info> allPlaneData;
 
     static void* radarRoutine(void* arg);
     void startTracking();
     void processAirspace(const std::vector<int>& airspace);
-    planes_information getPlaneData(int planeId);
+    plane_info getPlaneData(int planeId);
 
 public:
     Radar();
     virtual ~Radar();
 
     void getAirspace();
-    int toComputerSys(compsys_msg data);
+    int toComputerSys(compSysMsg data);
 };
 
 #endif // RADAR_H_

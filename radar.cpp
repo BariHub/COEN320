@@ -3,6 +3,14 @@
 #include <unistd.h>
 using namespace std;
 
+#define COMPUTER_SYSTEM_ATTACH_POINT "ComputerSystem"
+void* Radar::radarRoutine(void* arg) {
+	// thread routine to start tracking
+    Radar* radar = static_cast<Radar*>(arg);
+    radar->startTracking();
+    return NULL;
+}
+
 Radar::Radar() : server_coid(-1) {
 	// create new thread for radar routine
     if (pthread_create(&thread_id, NULL, radarRoutine, (void*)this) != 0) {
@@ -11,8 +19,7 @@ Radar::Radar() : server_coid(-1) {
 }
 
 Radar::~Radar() {
-	// signal thread to stop running
-	running = false;
+
     // wait for thread to finish executing
     pthread_join(thread_id, NULL);
 }
@@ -26,15 +33,7 @@ void Radar::startTracking() {
     }
 }
 
-void* Radar::radarRoutine(void* arg) {
-	// thread routine to start tracking
-    Radar* radar = static_cast<Radar*>(arg);
-    radar->startTracking();
-    return NULL;
-}
-
-
-int Radar::toComputerSys(compsys_msg data) {
+int Radar::toComputerSys(compSysMsg data) {
     int server_coid = name_open(COMPUTER_SYSTEM_ATTACH_POINT, 0);
     // try to connect with server
     if (server_coid == -1) {
@@ -55,7 +54,7 @@ void Radar::getAirspace() {
     while (true) {
     	sleep(1);
         cout << "Radar: Timer waited 1s" << std::endl;
-        airspace = Plane::airspace;
+        airspace = Plane::mPlanesInAirSpace;;
 
         if (airspace.empty()) {
             cout << "Radar: Airspace empty" << std::endl;
@@ -66,8 +65,8 @@ void Radar::getAirspace() {
 }
 
 void Radar::processAirspace(const std::vector<int>& airspace) {
-    compsys_msg data;
-    data.hdr.type = 0x01;
+    compSysMsg data;
+    data.header.type = 0x01;
 
     // iterate over each element in airspace
     for (int planeId : airspace) {
@@ -83,15 +82,15 @@ void Radar::processAirspace(const std::vector<int>& airspace) {
     // send data to compsys and clear collected data for next
     // data gathering cycle
     if (!allPlaneData.empty()) {
-        data.allPlanes = allPlaneData;
+        data.planeList = allPlaneData;
         toComputerSys(data);
         allPlaneData.clear();
     }
 }
 
-planes_information Radar::getPlaneData(int planeId) {
+plane_info Radar::getPlaneData(int planeId) {
 	// store plane data
-    planes_information planeMsg;
+    plane_info planeMsg;
 
     // connect to server using plane id
     // convert id to string then to c string
@@ -109,7 +108,7 @@ planes_information Radar::getPlaneData(int planeId) {
     }
 
     name_close(server_coid);
-    cout << "Radar: Data of Plane #" << planeMsg.ID << ": Coords(" << planeMsg.arrivalPosX << ", " << planeMsg.arrivalPosY << ", " << planeMsg.arrivalPosZ << ")" << endl;
+    cout << "Radar: Data of Plane #" << planeMsg.ID << ": Coords(" << planeMsg.PositionX<< ", " << planeMsg.PositionY << ", " << planeMsg.PositionZ << ")" << endl;
 
     return planeMsg;
 }

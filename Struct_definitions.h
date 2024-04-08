@@ -14,8 +14,11 @@ typedef struct _pulse msg_header_t;
 
 typedef struct _plane_info{
 	int ID;
-	float PositionX, PositionY, PositionZ, VeloctyX, VelocityY, VelocityZ;
+	float PositionX, PositionY, PositionZ, VelocityX, VelocityY, VelocityZ;
 } plane_info;
+typedef struct _my_msg {
+	msg_header_t hdr;
+} msg;
 
 typedef struct{
 	msg_header_t header;
@@ -35,5 +38,12 @@ typedef struct{
 	float positionx, positiony, positionz, speedx ,speedy ,speedz;
 	std::vector<plane_info> planeList;
 }compSysMsg;
+
+typedef struct{
+	msg_header_t header;
+	std::vector<plane_info> planeList;
+	std::vector<int> violatingPlanes;
+}DispSysMsg;
+
 
 #endif /* STRUCT_DEFINITIONS_H_ */
