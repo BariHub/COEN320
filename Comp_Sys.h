@@ -33,8 +33,8 @@ public:
 	vector<plane_info> planes;
 
 	CompSys();
-	vector<int> violationVerification();
-	vector<float> NextPos(plane_info, plane_info, int);
+	vector<int> violationVerification(int);
+	vector<float> NextPos(plane_info&, plane_info&, int);
 	int sendBaseInfo();
 	int listen();
 	int sendToDisplay(compSysToDispMsg Msg);

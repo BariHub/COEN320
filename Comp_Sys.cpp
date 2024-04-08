@@ -44,13 +44,13 @@ vector<float> CompSys::NextPos(plane_info &a1, plane_info &a2, int n){
 	pos2.push_back(a2.PositionY);
 	pos2.push_back(a2.PositionZ);
 
-	vel1.push_back(a1.VeloctyX);
-	vel1.push_back(a1.VeloctyY);
-	vel1.push_back(a1.VeloctyZ);
+	vel1.push_back(a1.VelocityX);
+	vel1.push_back(a1.VelocityY);
+	vel1.push_back(a1.VelocityZ);
 
-	vel2.push_back(a2.VeloctyX);
-	vel2.push_back(a2.VeloctyY);
-	vel2.push_back(a2.VeloctyZ);
+	vel2.push_back(a2.VelocityX);
+	vel2.push_back(a2.VelocityY);
+	vel2.push_back(a2.VelocityZ);
 
 	//Calculate postition after 60s
 	float locA1X = pos1[0] + vel1[0]*n;
@@ -67,7 +67,7 @@ vector<float> CompSys::NextPos(plane_info &a1, plane_info &a2, int n){
 	dist.push_back(abs(locA1Z-locA2Z));
 	return dist;
 }
-vector <int> CompSys::violationVerification(){
+vector <int> CompSys::violationVerification(int n){
 	vector <int> volatingPlanes;
 	vector <float> distances;
 
@@ -77,28 +77,28 @@ vector <int> CompSys::violationVerification(){
 			if(abs(planes[i].PositionX-planes[j].PositionX) < 3000 || abs(planes[i].PositionY-planes[j].PositionY) < 3000 ||
 					abs(planes[i].PositionZ-planes[j].PositionZ) <1000)
 			{
-				violatingPlanes.push_back(planes[i].mID);
-				violatingPlanes.push_back(planes[j].mID);
+				volatingPlanes.push_back(planes[i].ID);
+				volatingPlanes.push_back(planes[j].ID);
 			}
 			//Compute future violations in next 1 minute
-			distances = NextPos(planes[i], planes[j]);
+			distances = NextPos(planes[i], planes[j], n);
 			if(distances[0] < 3000 || distances[1] < 3000 || distances[2] < 1000){
-				violatingPlanes.push_back(planes[i].mID);
-				violatingPlanes.push_back(planes[j].mID);
+				volatingPlanes.push_back(planes[i].ID);
+				volatingPlanes.push_back(planes[j].ID);
 			}
 		}
 	}
-	return violatinPlanes;
+	return volatingPlanes;
 }
 
 int CompSys::listen(){
 	compSysMsg planeInfo;
 	compSysToDispMsg Msg;
-	planeMsg planeMsg;
+	MsgToPlane planeMsg;
 	planeMsg.header.type = 0X01; // TO INDICATE TO COMMUNICATION SYSTEM THIS IS A MESSAGE FROM COMPUTER SYSTEM
 	name_attach_t *attach;
-	my_data_t msg;
 
+	// create a channel, acts as server, waiting to receive messages from comms?
 	if ((attach = name_attach(NULL, COMPUTER_SYSTEM_ATTACH_POINT, 0)) == NULL) {
 		perror("Error occurred while creating the channel");
 	}
@@ -163,7 +163,8 @@ int CompSys::listen(){
 			//format aircraft data to be sent to the display system
 			Msg.header = planeInfo.header;
 			Msg.planeList = planes;
-			Msg.violatingPlanes = viollationVerification();
+			Msg.violatingPlanes = violationVerification(10); // this needs to be
+			// changed, take input from console, decide what time in seconds
 
 			sendToDisplay(Msg);
 		}
@@ -171,9 +172,9 @@ int CompSys::listen(){
 		else if(planeInfo.header.type == 0x02){
 
 			planeMsg.ID = planeInfo.ID;
-			planeMsg.altitude = planeInfo.altitude;
-			planeMsg.positionx = planeInfo.positionx;
-			planeMsg.positionz = planeInfo.positionz;
+			planeMsg.positionX = planeInfo.positionx;
+			planeMsg.positionY = planeInfo.positiony;
+			planeMsg.positionZ = planeInfo.positionz;
 			planeMsg.speedx = planeInfo.speedx;
 			planeMsg.speedy = planeInfo.speedy;
 			planeMsg.speedz = planeInfo.speedz;
@@ -189,11 +190,11 @@ int CompSys::listen(){
 	return EXIT_SUCCESS;
 }
 int CompSys::sendToDisplay(compSysToDispMsg Msg){
-	if((serverId = name_open(DISPLAY_ATTACH_POINT, 0))==-1){
+	if((serverId = name_open(DISPLAY_ATTACH_POINT, 0)) == -1){
 		cout<<"Failed to create connection with Display system!"<<endl;
 		return EXIT_FAILURE;
 	}
-	if(MsgSend(serverId, &msg, sizeof(msg),0,0) == -1){
+	if(MsgSend(serverId, &Msg, sizeof(Msg),0,0) == -1){
 		cout<<"Failed to send message to display system!"<<endl;
 		return EXIT_FAILURE;
 	}
@@ -201,8 +202,8 @@ int CompSys::sendToDisplay(compSysToDispMsg Msg){
 	return EXIT_SUCCESS;
 }
 
-int CompSys::sendToCommSys(planeMsg msg){
-	if((serverId = name_open(COMMUNICATION_ATTACH_POINT, 0))==-1){
+int CompSys::sendToCommSys(MsgToPlane msg){
+	if((serverId = name_open(COMMUNICATION_SYSTEM_ATTACH_POINT, 0))==-1){
 		cout<<"Failed to create connection with Display system!"<<endl;
 		return EXIT_FAILURE;
 	}
