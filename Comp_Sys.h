@@ -22,7 +22,7 @@
 
 using namespace std;
 
-class CompSys {
+class CompSys{
 
 	int serverId;
 	int listenId;
@@ -31,15 +31,13 @@ class CompSys {
 public:
 	pthread_t thread_id;
 	vector<plane_info> planes;
-
 	CompSys();
-	vector<int> violationVerification(int);
-	vector<float> NextPos(plane_info&, plane_info&, int);
 	int sendBaseInfo();
 	int listen();
 	int sendToDisplay(compSysToDispMsg Msg);
-	int sendToCommSys(MsgToPlane msg);
-	int log(char*, int);
+	int sendToCommSys(plane_info msg);
+	vector<float> NextPos(plane_info &a1, plane_info &a2, int n);
+	vector <int> violationVerification();
 	virtual ~CompSys();
 };
 

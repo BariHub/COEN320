@@ -18,6 +18,16 @@ void* dispStartRoutine(void * arg){
 }
 Display::Display(){
 	this -> rcvrId = -1;
+	plane_info plane;
+	plane.ID = 0;
+	plane.PositionX = 0.0;
+	plane.PositionY =0.0;
+	plane.PositionZ =0.0;
+	plane.VelocityX =0.0;
+	plane.VelocityY =0.0;
+	plane.VelocityZ = 0.0;
+	fill(planeList.begin(), planeList.end(),plane);
+	fill(violatingPairs.begin(), violatingPairs.end(), 0);
 	if(pthread_create(&thread_id, NULL, dispStartRoutine, (void *)this) != 0)
 		{
 			cout<<"Failed to start computer system thread!"<<endl;
@@ -93,11 +103,12 @@ int Display::DisplayListen(){
 
 		//Wait for messages from computer system to display data
 		if (msg.header.type == 0x01) {
-			planeList = dispMsg.planeList;
-			violatingPairs = dispMsg.violatingPlanes;
+			planeList = msg.planeList;
+			violatingPairs = msg.violatingPlanes;
 			cout<<"THE FOLLOWING PAIRS ARE COMMITTING VIOLATIONS IN THE NEXT N SECONDS!"<<endl;
-			for (int i = 0; i < violatingPairs.size(); i+=2) {
-			        cout << violatingPairs[i]<<" AND "<<violatingPairs[i+1]<<endl;
+			for (int i = 0; i < violatingPairs.size(); i+=4) { //to be verified
+				cout<<i<<endl;
+			    cout << violatingPairs[i]<<" AND "<<violatingPairs[i+1]<<endl;
 			    }
 		}
 		MsgReply(rcvrId, EOK, 0, 0);
@@ -123,16 +134,16 @@ void Display::gridDisplay(vector<plane_info> planeList){
 
 	//creates 3 grids one in X-Y, Y-Z, Z-X
 	//XY PLANE
-	string gridXY[x][y];
+	string gridXY[x][y] = {" "};
 
-	for(int i=0; i<sizeof(planeList); i++){
+	for(int i=0; i<planeList.size(); i++){
 		for(int j=0; j<x; j++){
 			//check if its in airspace boundaries in x direction
 			if(planeList[i].PositionX >= (xyCellSize*j) &&
 					planeList[i].PositionX <= (xyCellSize*(j+1))){
 				for(int k=0; k<y;k++){
 					//now check if its in boundaries in y direction
-					if(planeList[i].PositionY>= (xyCellSize*k) &&
+					if(planeList[i].PositionY >= (xyCellSize*k) &&
 										planeList[i].PositionY <= (xyCellSize*(k+1))){
 						if(gridXY[j][k] != ""){
 							gridXY[j][k] += ",";
@@ -145,9 +156,9 @@ void Display::gridDisplay(vector<plane_info> planeList){
 	}
 
 	//YZ PLANE
-	string gridYZ[y][z];
+	string gridYZ[y][z]={" "};
 
-	for(int i=0; i<sizeof(planeList); i++){
+	for(int i=0; i<planeList.size(); i++){
 		for(int j=0; j<y; j++){
 			//check if its in airspace boundaries in x direction
 			if(planeList[i].PositionY >= (xyCellSize*j) &&
@@ -166,9 +177,9 @@ void Display::gridDisplay(vector<plane_info> planeList){
 		}
 	}
 	//XZ PLANE
-	string gridXZ[x][z];
+	string gridXZ[x][z]={" "};
 
-	for(int i=0; i<sizeof(planeList); i++){
+	for(int i=0; i<planeList.size(); i++){
 		for(int j=0; j<y; j++){
 			//check if its in airspace boundaries in x direction
 			if(planeList[i].PositionX >= (xyCellSize*j) &&
@@ -190,36 +201,36 @@ void Display::gridDisplay(vector<plane_info> planeList){
 	//print all three grids
 	for(int i =0; i < x; i++){
 		for(int j=0; j<y; j++){
-			if(gridXY[i][j] == ""){
+			if(gridXY[i][j] == " "){
 				cout<<"|";
 			}
 			else cout<<"|" + gridXY[i][j];
 		}
 		cout<<endl;
 	}
-	cout<<endl;
+	cout<<"\n\n";
 
 	for(int i =0; i < x; i++){
 		for(int j=0; j<z; j++){
-			if(gridXZ[i][j] == ""){
+			if(gridXZ[i][j] == " "){
 				cout<<"|";
 			}
 			else cout<<"|" + gridXZ[i][j];
 		}
-		cout<<endl;
+		cout<<"\n\n";
 	}
 	cout<<endl;
 
 	for(int i =0; i < y; i++){
 		for(int j=0; j<z; j++){
-			if(gridYZ[i][j] == ""){
+			if(gridYZ[i][j] == " "){
 				cout<<"|";
 			}
 			else cout<<"|" + gridYZ[i][j];
 		}
 		cout<<endl;
 	}
-	cout<<endl;
+	cout<<"\n\n";
 }
 Display::~Display(){}
 

@@ -68,7 +68,7 @@ int AirTrafficControl::generateData(int iNumPlanes)
 		wSide++;
 		wSide = wSide % 4;
 	}
-	for(Plane* wPlane : mPlanes)
+	for(Plane *wPlane : mPlanes)
 	{
 		if(pthread_join(wPlane->thread_id, NULL) != 0)
 		{

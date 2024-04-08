@@ -6,8 +6,8 @@ using namespace std;
 #define COMPUTER_SYSTEM_ATTACH_POINT "ComputerSystem"
 void* Radar::radarRoutine(void* arg) {
 	// thread routine to start tracking
-    Radar* radar = static_cast<Radar*>(arg);
-    radar->startTracking();
+    Radar& radar = *(Radar*) arg;
+    radar.getAirspace();;
     return NULL;
 }
 
@@ -17,22 +17,11 @@ Radar::Radar() : server_coid(-1) {
         std::cerr << "Radar: Failed to start radar tracking thread." << std::endl;
     }
 }
-
 Radar::~Radar() {
 
     // wait for thread to finish executing
     pthread_join(thread_id, NULL);
 }
-
-// start tracking objects to get info about airspace objects
-void Radar::startTracking() {
-    while (true) {
-        getAirspace();
-        // radar checks airspace every 1sec
-        sleep(1);
-    }
-}
-
 int Radar::toComputerSys(compSysMsg data) {
     int server_coid = name_open(COMPUTER_SYSTEM_ATTACH_POINT, 0);
     // try to connect with server
@@ -54,7 +43,7 @@ void Radar::getAirspace() {
     while (true) {
     	sleep(1);
         cout << "Radar: Timer waited 1s" << std::endl;
-        airspace = Plane::mPlanesInAirSpace;;
+        airspace = Plane::mPlanesInAirSpace;
 
         if (airspace.empty()) {
             cout << "Radar: Airspace empty" << std::endl;

@@ -35,7 +35,7 @@ public:
 	void startTimer();
 	void tick();
 	double tock();
-	virtual ~cTimer();
+	virtual ~cTimer(); //destructor
 };
 
 #endif /* CTIMER_H_ */

@@ -1,11 +1,22 @@
 #include "AirTrafficControl.h"
+#include "Radar.h"
+#include "Comms.h"
+#include "Display.h"
+#include "Comp_Sys.h"
 #include <iostream>
 
 int main()
 {
+	Radar rad;
+	Display displaySystem;
+	CompSys computerSystem;
 	AirTrafficControl atc;
-	atc.generateData(2);
+
+	atc.generateData(7);
 	
+
+
+
 	/*if (atc.importData() == -1)
 	{
 		std::cerr << "Exiting..." << std::endl;

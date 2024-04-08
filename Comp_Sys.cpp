@@ -1,5 +1,4 @@
-/*
- * Comp_Sys.cpp
+ /* Comp_Sys.cpp
  *
  *  Created on: Apr. 5, 2024
  *      Author: Magym
@@ -14,6 +13,7 @@ using namespace std;
 #define COMMUNICATION_SYSTEM_ATTACH_POINT "CommunicationSystem"
 
 void* compSysStartRoutine(void *args){
+
 	CompSys& compSys = *(CompSys*) args;
 	compSys.listen();
 	return NULL;
@@ -23,6 +23,15 @@ CompSys::CompSys(){
 	this -> serverId = -1;
 	this -> listenId = -1;
 	this -> rcvrId = -1;
+	plane_info plane;
+	plane.ID = 0;
+	plane.PositionX = 0.0;
+	plane.PositionY =0.0;
+	plane.PositionZ =0.0;
+	plane.VelocityX =0.0;
+	plane.VelocityY =0.0;
+	plane.VelocityZ = 0.0;
+	fill(planes.begin(), planes.end(), plane);
 	if(pthread_create(&thread_id, NULL, compSysStartRoutine, (void *)this) != 0)
 	{
 		cout<<"Failed to start computer system thread!"<<endl;
@@ -67,8 +76,8 @@ vector<float> CompSys::NextPos(plane_info &a1, plane_info &a2, int n){
 	dist.push_back(abs(locA1Z-locA2Z));
 	return dist;
 }
-vector <int> CompSys::violationVerification(int n){
-	vector <int> volatingPlanes;
+vector <int> CompSys::violationVerification(){
+	vector <int> violatingPlanes;
 	vector <float> distances;
 
 	for (int i=0; i<planes.size();i++){
@@ -77,28 +86,29 @@ vector <int> CompSys::violationVerification(int n){
 			if(abs(planes[i].PositionX-planes[j].PositionX) < 3000 || abs(planes[i].PositionY-planes[j].PositionY) < 3000 ||
 					abs(planes[i].PositionZ-planes[j].PositionZ) <1000)
 			{
-				volatingPlanes.push_back(planes[i].ID);
-				volatingPlanes.push_back(planes[j].ID);
+				violatingPlanes.push_back(planes[i].ID);
+				violatingPlanes.push_back(planes[j].ID);
 			}
 			//Compute future violations in next 1 minute
-			distances = NextPos(planes[i], planes[j], n);
+			distances = NextPos(planes[i], planes[j],60);
 			if(distances[0] < 3000 || distances[1] < 3000 || distances[2] < 1000){
-				volatingPlanes.push_back(planes[i].ID);
-				volatingPlanes.push_back(planes[j].ID);
+				violatingPlanes.push_back(planes[i].ID);
+				violatingPlanes.push_back(planes[j].ID);
 			}
 		}
 	}
-	return volatingPlanes;
+	return violatingPlanes;
 }
 
 int CompSys::listen(){
 	compSysMsg planeInfo;
 	compSysToDispMsg Msg;
-	MsgToPlane planeMsg;
-	planeMsg.header.type = 0X01; // TO INDICATE TO COMMUNICATION SYSTEM THIS IS A MESSAGE FROM COMPUTER SYSTEM
+	plane_info planeMsg;
+	MsgToPlane toPlaneMsg;
+	toPlaneMsg.header.type = 0X01; // TO INDICATE TO COMMUNICATION SYSTEM THIS IS A MESSAGE FROM COMPUTER SYSTEM
 	name_attach_t *attach;
 
-	// create a channel, acts as server, waiting to receive messages from comms?
+
 	if ((attach = name_attach(NULL, COMPUTER_SYSTEM_ATTACH_POINT, 0)) == NULL) {
 		perror("Error occurred while creating the channel");
 	}
@@ -163,8 +173,7 @@ int CompSys::listen(){
 			//format aircraft data to be sent to the display system
 			Msg.header = planeInfo.header;
 			Msg.planeList = planes;
-			Msg.violatingPlanes = violationVerification(10); // this needs to be
-			// changed, take input from console, decide what time in seconds
+			Msg.violatingPlanes = violationVerification();
 
 			sendToDisplay(Msg);
 		}
@@ -172,12 +181,12 @@ int CompSys::listen(){
 		else if(planeInfo.header.type == 0x02){
 
 			planeMsg.ID = planeInfo.ID;
-			planeMsg.positionX = planeInfo.positionx;
-			planeMsg.positionY = planeInfo.positiony;
-			planeMsg.positionZ = planeInfo.positionz;
-			planeMsg.speedx = planeInfo.speedx;
-			planeMsg.speedy = planeInfo.speedy;
-			planeMsg.speedz = planeInfo.speedz;
+			planeMsg.PositionX = planeInfo.positionx;
+			planeMsg.PositionY = planeInfo.positiony;
+			planeMsg.PositionZ = planeInfo.positionz;
+			planeMsg.VelocityX = planeInfo.speedx;
+			planeMsg.VelocityY = planeInfo.speedy;
+			planeMsg.VelocityZ = planeInfo.speedz;
 			sendToCommSys(planeMsg);
 		}
 
@@ -190,7 +199,7 @@ int CompSys::listen(){
 	return EXIT_SUCCESS;
 }
 int CompSys::sendToDisplay(compSysToDispMsg Msg){
-	if((serverId = name_open(DISPLAY_ATTACH_POINT, 0)) == -1){
+	if((serverId = name_open(DISPLAY_ATTACH_POINT, 0))==-1){
 		cout<<"Failed to create connection with Display system!"<<endl;
 		return EXIT_FAILURE;
 	}
@@ -202,16 +211,16 @@ int CompSys::sendToDisplay(compSysToDispMsg Msg){
 	return EXIT_SUCCESS;
 }
 
-int CompSys::sendToCommSys(MsgToPlane msg){
+int CompSys::sendToCommSys(plane_info msg){
 	if((serverId = name_open(COMMUNICATION_SYSTEM_ATTACH_POINT, 0))==-1){
-		cout<<"Failed to create connection with Display system!"<<endl;
+		cout<<"Failed to create connection with Communication system!"<<endl;
 		return EXIT_FAILURE;
 	}
 	if(MsgSend(serverId, &msg, sizeof(msg),0,0) == -1){
-		cout<<"Failed to send message to display system!"<<endl;
+		cout<<"Failed to send message to communication system!"<<endl;
 		return EXIT_FAILURE;
 	}
 	name_close(serverId);
 	return EXIT_SUCCESS;
 }
-
+CompSys::~CompSys(){}
