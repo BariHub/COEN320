@@ -1,43 +1,38 @@
-#ifndef OPERATOR_CONSOLE_H
-#define OPERATOR_CONSOLE_H
-#define SHUTDOWN_MSG 0xFF
+#ifndef OPERATORCONSOLE_H
+#define OPERATORCONSOLE_H
 
-
-#include <iostream>
 #include <string>
-#include <fstream>
-#include <limits>
-#include <sys/dispatch.h>
+#include <vector>
+#include <pthread.h>
 
-typedef struct _pulse msg_header_t;
+struct compsys_msg;
+class ATC;
 
-
-typedef struct _my_data {
-    msg_header_t hdr;
-    int commandType;
-    int flightID;
-    int arg1, arg2, arg3;
-} my_data_t;
-
-class OperatorConsole {
-private:
-    int server_coid;
-    static constexpr const char* ATTACH_POINT = "my_channel";
-    std::atomic<bool> shouldTerminate{false};
-
-public:
-    OperatorConsole();
-    ~OperatorConsole();
-
-    void run();
-    void logCommand(const std::string& command, int flightID, int arg1 = 0, int arg2 = 0, int arg3 = 0);
-    void changeAirplaneFlightLevel(int flightID, int newFlightLevel);
-    void changeAirplaneSpeed(int flightID, int newSpeedX, int newSpeedY, int newSpeedZ);
-    void changeAirplanePosition(int flightID, int newX, int newY, int newZ);
-    void requestAircraftInfo(int flightID);
-
-    void sendMessageToComputerSystem(const my_data_t& data);
-    void receiveMessageFromComputerSystem(my_data_t& data);
+enum actionCommand {
+    adjustSpeed,
+    adjustFL,
+    adjustPosition,
+    invalidCommand
 };
 
-#endif
+class OperatorConsole {
+public:
+    OperatorConsole(ATC atc);
+    ~OperatorConsole();
+
+    void getCommands();
+
+private:
+    ATC atc;
+    int server_coid;
+    pthread_t thread_id;
+
+    int toComputerSys(compsys_msg data);
+    void applyCommandToPlane(compsys_msg& data, const std::string& command, int amount);
+    void processCommandsForPlane();
+    static void* operator_console_start_routine(void *arg);
+
+    static actionCommand stringToActionCommand(const std::string& inString);
+};
+
+#endif // OPERATORCONSOLE_H
