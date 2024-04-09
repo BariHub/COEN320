@@ -10,14 +10,9 @@ AirTrafficControl::~AirTrafficControl()
 
 int AirTrafficControl::generateData(int iNumPlanes)
 {
-	std::ofstream wFout;
-	wFout.open("planes.txt", std::ios::out);
-
-	if (!wFout)
-	{
-		std::cerr << "Unable to open file." << std::endl;
-		return -1;
-	}
+	int fd;
+	int size_written;
+	fd = creat("/data/home/qnxuser/planes.txt", S_IWUSR | S_IRUSR | S_IXUSR);
 
 	int wSide = 0;
 	// plane information, ID and its 3d pos and 3d vel
@@ -62,20 +57,31 @@ int AirTrafficControl::generateData(int iNumPlanes)
 			wVel[2] = 0;
 			break;
 		}
-		Plane* wPlane = new Plane(wID, 0, wPos[0], wPos[1], wPos[2], wVel[0], wVel[1], wVel[2]);
-		mPlanes.push_back(wPlane);
+		std::string line = std::to_string(wID) + " " + std::to_string(0) + " " + std::to_string(wPos[0]) + " " + std::to_string(wPos[1])
+				+ " " + std::to_string(wPos[2]) + " " + std::to_string(wVel[0])
+				+ " " + std::to_string(wVel[1]) + " " + std::to_string(wVel[2]) + "\n";
+		std::cout << line.c_str() << std::endl;
+
+		size_written = write(fd, line.c_str(), sizeof(line.size()));
+		if( size_written != sizeof( line.size() ) ) {
+	        perror( "Error writing myfile.dat" );
+	        return EXIT_FAILURE;
+	    }
+		/*Plane* wPlane = new Plane(wID, 0, wPos[0], wPos[1], wPos[2], wVel[0], wVel[1], wVel[2]);
+		mPlanes.push_back(wPlane);*/
 		wID++;
 		wSide++;
 		wSide = wSide % 4;
 	}
-	for(Plane *wPlane : mPlanes)
+	close(fd);
+	/*for(Plane *wPlane : mPlanes)
 	{
 		if(pthread_join(wPlane->thread_id, NULL) != 0)
 		{
 			std::cerr << "pthread_join error" << std::endl;
 			exit(1);
 		}
-	}
+	}*/
 
 	return 0;
 }
@@ -118,6 +124,11 @@ int AirTrafficControl::importData()
 	wFin.close();
 
 	return 0;
+}
+
+int AirTrafficControl::exportData()
+{
+
 }
 
 void AirTrafficControl::printInfo() const
