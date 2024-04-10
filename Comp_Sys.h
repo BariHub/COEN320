@@ -27,6 +27,7 @@ class CompSys{
 	int serverId;
 	int listenId;
 	int rcvrId;
+	int  file;
 
 public:
 	pthread_t thread_id;
@@ -38,6 +39,7 @@ public:
 	int sendToCommSys(plane_info msg);
 	vector<float> NextPos(plane_info &a1, plane_info &a2, int n);
 	vector <int> violationVerification();
+	void loggingTheAirspaceSystem(char* buffer, int length);
 	virtual ~CompSys();
 };
 

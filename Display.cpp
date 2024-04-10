@@ -12,7 +12,6 @@
 void* dispStartRoutine(void * arg){
 	Display& displaySystem = *(Display*) arg;
 	displaySystem.DisplayListen();
-
 	displaySystem.gridDisplay(displaySystem.planeList);
 	return NULL;
 }
@@ -106,10 +105,22 @@ int Display::DisplayListen(){
 			planeList = msg.planeList;
 			violatingPairs = msg.violatingPlanes;
 			cout<<"THE FOLLOWING PAIRS ARE COMMITTING VIOLATIONS IN THE NEXT N SECONDS!"<<endl;
-			for (int i = 0; i < violatingPairs.size(); i+=4) { //to be verified
-				cout<<i<<endl;
+			for (int i = 0; i < violatingPairs.size(); i+=2) { //to be verified
 			    cout << violatingPairs[i]<<" AND "<<violatingPairs[i+1]<<endl;
+			    violatingPairs[i]=0;
+			    violatingPairs[i+1]=0;
 			    }
+		}
+		if(msg.header.type == 0x03){
+			int ID = msg.ID;
+
+			for(int i = 0; i < msg.planeList.size(); i++){
+				if(msg.planeList[i].ID == ID){
+					cout<<"The operator requested more data about Aircraft" << ID
+							<<": Coords(" << msg.planeList[i].PositionX << ", " << msg.planeList[i].PositionY << ", " << msg.planeList[i].PositionZ << ") And velocity :("
+							<<msg.planeList[i].VelocityX <<", "<< msg.planeList[i].VelocityX <<", "<< msg.planeList[i].VelocityZ <<")."<< endl;
+				}
+			}
 		}
 		MsgReply(rcvrId, EOK, 0, 0);
 		cTimer timer(5,0);
@@ -127,7 +138,7 @@ int Display::DisplayListen(){
 void Display::gridDisplay(vector<plane_info> planeList){
 	const int x = 25;
 	const int y = 25;
-	const int z = 25;
+	const int z = 40;
 	int xyCellSize = 4000;
 	int zCellSize = 1000;
 
@@ -139,12 +150,10 @@ void Display::gridDisplay(vector<plane_info> planeList){
 	for(int i=0; i<planeList.size(); i++){
 		for(int j=0; j<x; j++){
 			//check if its in airspace boundaries in x direction
-			if(planeList[i].PositionX >= (xyCellSize*j) &&
-					planeList[i].PositionX <= (xyCellSize*(j+1))){
+			if(planeList[i].PositionX >= (xyCellSize*j) && planeList[i].PositionX <= (xyCellSize*(j+1))){
 				for(int k=0; k<y;k++){
 					//now check if its in boundaries in y direction
-					if(planeList[i].PositionY >= (xyCellSize*k) &&
-										planeList[i].PositionY <= (xyCellSize*(k+1))){
+					if(planeList[i].PositionY >= (xyCellSize*k) && planeList[i].PositionY <= (xyCellSize*(k+1))){
 						if(gridXY[j][k] != ""){
 							gridXY[j][k] += ",";
 						}
@@ -163,10 +172,9 @@ void Display::gridDisplay(vector<plane_info> planeList){
 			//check if its in airspace boundaries in x direction
 			if(planeList[i].PositionY >= (xyCellSize*j) &&
 					planeList[i].PositionY <= (xyCellSize*(j+1))){
-				for(int k=0; k<z;k++){
+				for(int k=15; k<z;k++){
 					//now check if its in boundaries in y direction
-					if(planeList[i].PositionZ >= (zCellSize*k) &&
-										planeList[i].PositionZ <= (zCellSize*(k+1))){
+					if(planeList[i].PositionZ >= (zCellSize*k) && planeList[i].PositionZ <= (zCellSize*(k+1))){
 						if(gridYZ[j][k] != ""){
 							gridYZ[j][k] += ",";
 						}
@@ -180,14 +188,12 @@ void Display::gridDisplay(vector<plane_info> planeList){
 	string gridXZ[x][z]={" "};
 
 	for(int i=0; i<planeList.size(); i++){
-		for(int j=0; j<y; j++){
+		for(int j=0; j<x; j++){
 			//check if its in airspace boundaries in x direction
-			if(planeList[i].PositionX >= (xyCellSize*j) &&
-					planeList[i].PositionX <= (xyCellSize*(j+1))){
-				for(int k=0; k<z;k++){
+			if(planeList[i].PositionX >= (xyCellSize*j) && planeList[i].PositionX <= (xyCellSize*(j+1))){
+				for(int k=15; k<z;k++){
 					//now check if its in boundaries in y direction
-					if(planeList[i].PositionZ >= (zCellSize*k) &&
-										planeList[i].PositionZ <= (zCellSize*(k+1))){
+					if(planeList[i].PositionZ >= (zCellSize*k) && planeList[i].PositionZ <= (zCellSize*(k+1))){
 						if(gridXZ[j][k] != ""){
 							gridXZ[j][k] += ",";
 						}
@@ -211,7 +217,7 @@ void Display::gridDisplay(vector<plane_info> planeList){
 	cout<<"\n\n";
 
 	for(int i =0; i < x; i++){
-		for(int j=0; j<z; j++){
+		for(int j=15; j<z; j++){
 			if(gridXZ[i][j] == " "){
 				cout<<"|";
 			}
@@ -222,7 +228,7 @@ void Display::gridDisplay(vector<plane_info> planeList){
 	cout<<endl;
 
 	for(int i =0; i < y; i++){
-		for(int j=0; j<z; j++){
+		for(int j=15; j<z; j++){
 			if(gridYZ[i][j] == " "){
 				cout<<"|";
 			}

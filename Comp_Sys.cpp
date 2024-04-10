@@ -20,6 +20,7 @@ void* compSysStartRoutine(void *args){
 }
 
 CompSys::CompSys(){
+	this->file = creat( "/data/home/qnxuser/AirspaceLog.txt", S_IRUSR | S_IWUSR | S_IXUSR );
 	this -> serverId = -1;
 	this -> listenId = -1;
 	this -> rcvrId = -1;
@@ -175,10 +176,20 @@ int CompSys::listen(){
 			Msg.planeList = planes;
 			Msg.violatingPlanes = violationVerification();
 
+			string logInfo = "Command " + to_string(planeInfo.ID) + " - " + to_string(planeInfo.positionx) + " - " + to_string(planeInfo.positiony) + " - "
+					+ to_string(planeInfo.positionz) + " - " + to_string(planeInfo.speedx) + " - " + to_string(planeInfo.speedy) + " - "
+					+ to_string(planeInfo.speedz) + "\n";
+			int length = logInfo.length();
+			char buffer [length+1];
+			strcpy(buffer, logInfo.c_str());
+
+			loggingTheAirspaceSystem(buffer,length);
+
 			sendToDisplay(Msg);
 		}
-		//messages from operator system
+		//messages from operator system to change the velocity of an aircraft
 		else if(planeInfo.header.type == 0x02){
+
 
 			planeMsg.ID = planeInfo.ID;
 			planeMsg.PositionX = planeInfo.positionx;
@@ -189,6 +200,13 @@ int CompSys::listen(){
 			planeMsg.VelocityZ = planeInfo.speedz;
 			sendToCommSys(planeMsg);
 		}
+		//Process extra display request
+		else if(planeInfo.header.type == 0x03){
+			Msg.header.type = planeInfo.header.type;
+			Msg.ID = planeInfo.ID;
+			sendToDisplay(Msg);
+		}
+
 
 		MsgReply(rcvrId, EOK, 0, 0);
 
@@ -222,5 +240,17 @@ int CompSys::sendToCommSys(plane_info msg){
 	}
 	name_close(serverId);
 	return EXIT_SUCCESS;
+}
+void CompSys::loggingTheAirspaceSystem(char* buffer, int length){
+
+	cTimer timer(30,0);
+	timer.waitTimer();
+	int size_written = write(file, buffer, sizeof( buffer) );
+	/* test for error              */
+	if( size_written != sizeof( buffer ) ) {
+		perror( "Error writing myfile.dat" );
+
+	}
+
 }
 CompSys::~CompSys(){}
