@@ -1,107 +1,133 @@
 #include "OperatorConsole.h"
-#define COMPUTER_SYSTEM_ATTACH_POINT "ComputerSystem"
 
-// check if commands match then return speed/FL/pos value
-actionCommand stringToActionCommand (const std::string& inString) {
-    if (inString == "change speed") return adjustSpeed;
-    if (inString == "change altitude") return adjustFL;
-    if (inString == "change position") return adjustPosition;
-    else return invalidCommand;
-}
+OperatorConsole::OperatorConsole(ATC& atcInstance, const std::string& logFilePath) : _atc(atcInstance), server_coid(0) {
+    openLogFile(logFilePath);
 
-
-int OperatorConsole::toComputerSys(compsys_msg data) {
-	if ((server_coid = name_open(COMPUTER_SYSTEM_ATTACH_POINT, 0)) == -1) {
-			std::cout << "Operator Console: Failed connection to server \n\n";
-			return EXIT_FAILURE;
-	}
-	if (MsgSend(server_coid, &data, sizeof(data), 0, 0) == -1) {
-		std::cout << "Operator Console: Failed to send message \n\n";
-		return EXIT_FAILURE;
-	}
-	name_close(server_coid);
-	return EXIT_SUCCESS;
-}
-
-// apply command to plane data
-void OperatorConsole::applyCommandToPlane(compsys_msg& data, const std::string& command, int amount) {
-    actionCommand cmd = stringToActionCommand(command);
-    switch (cmd) {
-        case adjustSpeed:
-            data.arrivalVelX = amount;
-            break;
-        case adjustFL:
-            data.arrivalVelY = amount;
-            break;
-        case adjustPosition:
-            data.arrivalVelZ = amount;
-            break;
-        case invalidCommand:
-            std::cout << "Operator Console: Invalid command. Please try again" << std::endl;
-            break;
+    if (pthread_create(&thread_id, NULL, &OperatorConsole::userInputThread, this) != 0) {
+        std::cerr << "Operator Console: Failed to start input thread\n";
+    } else {
+        isThreadActive = true;
     }
-}
-
-
-void OperatorConsole::processCommandsForPlane() {
-	vector<string> commandTypes = {"change speed", "change altitude", "change position", "change speed", "change altitude"};
-	vector<int> commandValues = {100, 200, 300, 400, 500};
-	vector<int> targetPlaneIDs = {6, 6, 2, 6, 6};
-
-
-    for (size_t i = 0; i < commandTypes.size(); i++) {
-        for (const auto& plane : atc.planes) {
-            if (targetPlaneIDs[i] == plane->ID) {
-                compsys_msg data;
-                data.hdr.type = 0x02;
-                data.ID = targetPlaneIDs[i];
-
-                data.arrivalPosX = plane->arrivalPosX;
-                data.arrivalPosY = plane->arrivalPosY;
-                data.arrivalPosZ = plane->arrivalPosZ;
-                data.arrivalVelX = plane->arrivalVelX;
-                data.arrivalVelY = plane->arrivalVelY;
-                data.arrivalVelZ = plane->arrivalVelZ;
-
-                applyCommandToPlane(data, commandTypes[i], commandValues[i]);
-                toComputerSys(data);
-                break;
-            }
-        }
-    }
-
-}
-
-void OperatorConsole::getCommands() {
-
-    cTimer timer(5,0,25,0);
-
-    while (true) {
-        timer.wait_next_activation();
-
-        if (atc.planes.empty()) {
-            std::cout << "Operator Console: Airspace empty, no airplanes to change";
-        } else {
-            processCommandsForPlane();
-        }
-    }
-}
-
-void* operator_console_start_routine(void *arg)
-{
-	OperatorConsole& operatorConsole = *(OperatorConsole*) arg;
-	operatorConsole.getCommands();
-	return NULL;
-}
-
-OperatorConsole::OperatorConsole(ATC atc) {
-		this->atc=atc;
-		this->server_coid = 0;
-		if(pthread_create(&thread_id,NULL,operator_console_start_routine,(void *) this)!=EOK)
-		{
-			std::cout << "Operator Console: Failed to start\n\n";
-		}
 }
 
 OperatorConsole::~OperatorConsole() {
+    if (logFile.is_open()) {
+        logFile.close();
+    }
+    if (isThreadActive) {
+        pthread_cancel(thread_id);
+        pthread_join(thread_id, NULL);
+    }
+}
+
+void OperatorConsole::openLogFile(const std::string& path) {
+    logFile.open(path, std::ios::app);
+    if (!logFile.is_open()) {
+        std::cerr << "Failed to open log file at " << path << ".\n";
+    } else {
+        std::cout << "Log file opened successfully at " << path << ".\n";
+    }
+}
+
+void OperatorConsole::log(const std::string& message) {
+    if (logFile.is_open()) {
+        logFile << message << std::endl;
+        if (!logFile) {
+            std::cerr << "Operator Console: Failed to write to log file.\n";
+        }
+    }
+}
+
+static void* OperatorConsole::userInputThread(void* arg) {
+    OperatorConsole* console = static_cast<OperatorConsole*>(arg);
+    std::string command;
+    while (true) {
+        std::cout << "Operator Console: Enter command: ";
+        if (std::getline(std::cin, command)) {
+            if (command == "exit") {
+                std::cout << "Exiting user input thread..." << std::endl;
+                break;
+            }
+            if (!command.empty()) {
+                console->processUserCommand(command);
+            }
+        }
+    }
+    return NULL;
+}
+
+void OperatorConsole::processUserCommand(const std::string& command) {
+    log(command);
+
+    std::istringstream iss(command);
+    std::vector<std::string> tokens(std::istream_iterator<std::string>{iss}, {});
+
+    if (tokens.empty() || tokens[0] == "exit") {
+        return;
+    }
+
+    if (tokens.size() < 2) {
+        std::cout << "Operator Console: Invalid command format.\n";
+        return;
+    }
+
+    int planeID = 0;
+    try {
+        planeID = std::stoi(tokens[1]);
+    } catch (const std::invalid_argument& e) {
+        std::cerr << "Invalid argument for plane ID." << std::endl;
+        return;
+    } catch (const std::out_of_range& e) {
+        std::cerr << "Plane ID is out of range." << std::endl;
+        return;
+    }
+    std::string commandType = tokens[0];
+
+    if (commandType == "request info") {
+        Plane* plane = _atc.findPlaneById(planeID);
+        if (!plane) {
+            std::cout << "Plane ID " << planeID << " not found.\n";
+            return;
+        }
+
+        std::cout << "Operator Console: Info for Plane ID " << planeID << ":\n"
+                  << "Speed x: " << plane->getSpeedx() << "\n"
+                  << "Speed y: " << plane->getSpeedy() << "\n"
+                  << "Speed z: " << plane->getSpeedz() << std::endl;
+    } else {
+        ActionCommand action = stringToActionCommand(commandType);
+        if (action == InvalidCommand) {
+            std::cout << "Operator Console: Invalid command. Please try again." << std::endl;
+            return;
+        }
+        compsys_msg data;
+        data.ID = planeID;
+
+        if (toComputerSys(data) == EXIT_FAILURE) {
+            std::cout << "Operator Console: Failed to execute command for plane ID " << planeID << "\n";
+        } else {
+            std::cout << "Operator Console: Command executed successfully for plane ID " << planeID << "\n";
+        }
+    }
+}
+
+OperatorConsole::ActionCommand OperatorConsole::stringToActionCommand(const std::string& commandString) {
+    if (commandString == "change speedx") return AdjustSpeedx;
+    if (commandString == "change speedy") return AdjustSpeedy;
+    if (commandString == "change speedz") return AdjustSpeedz;
+    if (commandString == "request info") return RequestInfo;
+    return InvalidCommand;
+}
+
+int OperatorConsole::toComputerSys(compsys_msg& data) {
+    if ((server_coid = name_open(COMPUTER_SYSTEM_ATTACH_POINT, 0)) == -1) {
+        std::cerr << "Operator Console: Failed to connect to server\n";
+        return EXIT_FAILURE;
+    }
+    if (MsgSend(server_coid, &data, sizeof(data), NULL, 0) == -1) {
+        std::cerr << "Operator Console: Failed to send message\n";
+        return EXIT_FAILURE;
+    }
+    name_close(server_coid);
+    return EXIT_SUCCESS;
 }

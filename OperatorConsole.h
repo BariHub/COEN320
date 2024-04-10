@@ -1,38 +1,42 @@
 #ifndef OPERATORCONSOLE_H
 #define OPERATORCONSOLE_H
 
+#include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
+#include <sstream>
 #include <pthread.h>
 
-struct compsys_msg;
-class ATC;
-
-enum actionCommand {
-    adjustSpeed,
-    adjustFL,
-    adjustPosition,
-    invalidCommand
-};
 
 class OperatorConsole {
 public:
-    OperatorConsole(ATC atc);
-    ~OperatorConsole();
-
-    void getCommands();
+    enum ActionCommand {
+        AdjustSpeedx,
+        AdjustSpeedy,
+        AdjustSpeedz,
+        RequestInfo,
+        InvalidCommand
+    };
 
 private:
-    ATC atc;
-    int server_coid;
+    ATC& _atc;
+    std::ofstream logFile;
+    bool isThreadActive;
     pthread_t thread_id;
+    int server_coid;
 
-    int toComputerSys(compsys_msg data);
-    void applyCommandToPlane(compsys_msg& data, const std::string& command, int amount);
-    void processCommandsForPlane();
-    static void* operator_console_start_routine(void *arg);
+    void openLogFile(const std::string& path);
+    static void* userInputThread(void* arg);
+    void processUserCommand(const std::string& command);
+    ActionCommand stringToActionCommand(const std::string& commandString);
+    int toComputerSys(compsys_msg& data);
 
-    static actionCommand stringToActionCommand(const std::string& inString);
+public:
+    OperatorConsole(ATC& atcInstance, const std::string& logFilePath);
+    ~OperatorConsole();
+
+    void log(const std::string& message);
 };
 
 #endif // OPERATORCONSOLE_H
