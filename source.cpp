@@ -9,23 +9,14 @@
 
 int main()
 {
+	AirTrafficControl atc;
 	Radar rad;
 	Display displaySystem;
 	CompSys computerSystem;
 	CommSystem CommSys;
-	AirTrafficControl atc;
 	OperatorConsole OP;
 
 	atc.run();
 	
-	/*if (atc.importData() == -1)
-	{
-		std::cerr << "Exiting..." << std::endl;
-		return -1;
-	}*/
-
-	atc.printInfo();
-
-	printf("End of script.");
 	return 0;
 }

@@ -2,6 +2,9 @@
 
 AirTrafficControl::AirTrafficControl()
 {
+	generateData(10, "low"); // number of planes is 10 for low congestion, generate all 3 files
+	generateData(20, "med");
+	generateData(30, "high");
 }
 
 AirTrafficControl::~AirTrafficControl()
@@ -15,9 +18,6 @@ AirTrafficControl::~AirTrafficControl()
 
 void AirTrafficControl::run()
 {
-	generateData(10, "low"); // number of planes is 10 for low congestion, generate all 3 files
-	generateData(20, "med");
-	generateData(30, "high");
 	std::string type;
 
 	while(true)
