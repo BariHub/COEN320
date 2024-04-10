@@ -176,14 +176,18 @@ int CompSys::listen(){
 			Msg.planeList = planes;
 			Msg.violatingPlanes = violationVerification();
 
-			string logInfo = "Command " + to_string(planeInfo.ID) + " - " + to_string(planeInfo.positionx) + " - " + to_string(planeInfo.positiony) + " - "
-					+ to_string(planeInfo.positionz) + " - " + to_string(planeInfo.speedx) + " - " + to_string(planeInfo.speedy) + " - "
-					+ to_string(planeInfo.speedz) + "\n";
-			int length = logInfo.length();
-			char buffer [length+1];
-			strcpy(buffer, logInfo.c_str());
+			for(int i=0; i<planes.size();i++){
+				string logInfo = "Aircraft " + to_string(planes[i].ID) + " - " + to_string(planes[i].PositionX) + " - " + to_string(planes[i].PositionY) + " - "
+						+ to_string(planes[i].PositionZ) + " - " + to_string(planes[i].VelocityX) + " - " + to_string(planes[i].VelocityY) + " - "
+						+ to_string(planes[i].VelocityZ) + "\n";
+				int length = logInfo.length();
+				char buffer [length+1];
+				strcpy(buffer, logInfo.c_str());
+				cout<<logInfo<<endl;
+				loggingTheAirspaceSystem(buffer,length);
+			}
 
-			loggingTheAirspaceSystem(buffer,length);
+
 
 			sendToDisplay(Msg);
 		}
@@ -244,7 +248,7 @@ int CompSys::sendToCommSys(plane_info msg){
 void CompSys::loggingTheAirspaceSystem(char* buffer, int length){
 
 	cTimer timer(30,0);
-	timer.waitTimer();
+	//timer.waitTimer();
 	int size_written = write(file, buffer, sizeof( buffer) );
 	/* test for error              */
 	if( size_written != sizeof( buffer ) ) {
