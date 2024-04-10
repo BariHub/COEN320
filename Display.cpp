@@ -104,8 +104,9 @@ int Display::DisplayListen(){
 		if (msg.header.type == 0x01) {
 			planeList = msg.planeList;
 			violatingPairs = msg.violatingPlanes;
-			cout<<"THE FOLLOWING PAIRS ARE COMMITTING VIOLATIONS IN THE NEXT N SECONDS!"<<endl;
-			for (int i = 0; i < violatingPairs.size(); i+=2) { //to be verified
+			int N = msg.n;
+			cout<<"THE FOLLOWING PAIRS ARE COMMITTING VIOLATIONS IN THE NEXT " << N<< " SECONDS!"<<endl;
+			for (int i = 0; i < violatingPairs.size(); i+=4) { //to be verified
 			    cout << violatingPairs[i]<<" AND "<<violatingPairs[i+1]<<endl;
 			    violatingPairs[i]=0;
 			    violatingPairs[i+1]=0;
@@ -205,7 +206,6 @@ void Display::gridDisplay(vector<plane_info> planeList){
 	}
 
 	//print all three grids
-	std::cout << "X-Y Plane\n";
 	for(int i =0; i < x; i++){
 		for(int j=0; j<y; j++){
 			if(gridXY[i][j] == " "){
@@ -216,7 +216,7 @@ void Display::gridDisplay(vector<plane_info> planeList){
 		cout<<endl;
 	}
 	cout<<"\n\n";
-	std::cout << "X-Z Plane\n";
+
 	for(int i =0; i < x; i++){
 		for(int j=15; j<z; j++){
 			if(gridXZ[i][j] == " "){
@@ -226,14 +226,13 @@ void Display::gridDisplay(vector<plane_info> planeList){
 		}
 		cout<<endl;
 	}
-	cout<<endl;
-	std::cout << "Y-Z Plane\n";
+	cout<<"\n\n";
 	for(int i =0; i < y; i++){
 		for(int j=15; j<z; j++){
 			if(gridYZ[i][j] == " "){
 				cout<<"|";
 			}
-			else cout << "|" + gridYZ[i][j];
+			else cout<<"|" + gridYZ[i][j];
 		}
 		cout<<endl;
 	}

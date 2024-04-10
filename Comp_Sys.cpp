@@ -198,7 +198,7 @@ int CompSys::listen(){
 			if(planeInfo.n != -1){
 				n = planeInfo.n;
 			}
-			else if(planeInfo.speedx != 1.0)
+			else if(planeInfo.speedx != -1.0)
 			{
 				planeMsg.VelocityX = planeInfo.speedx;
 				sendToCommSys(planeMsg);

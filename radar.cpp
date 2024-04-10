@@ -19,8 +19,6 @@ Radar::Radar() : server_coid(-1) {
 }
 Radar::~Radar() {
 
-    // wait for thread to finish executing
-    pthread_join(thread_id, NULL);
 }
 int Radar::toComputerSys(compSysMsg data) {
     int server_coid = name_open(COMPUTER_SYSTEM_ATTACH_POINT, 0);

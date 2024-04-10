@@ -104,6 +104,7 @@ void OperatorConsole::processUserCommand(const std::string& command) {
 		float speedz = stof(tokens[2]);
 		dataReq.ID = id;
 		dataReq.speedz = speedz;
+		cout<<dataReq.ID<<dataReq.speedz<<endl;
 
 		toComputerSys(dataReq);
     }

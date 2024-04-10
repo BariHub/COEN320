@@ -2,9 +2,6 @@
 
 AirTrafficControl::AirTrafficControl()
 {
-	generateData(10, "low"); // number of planes is 10 for low congestion, generate all 3 files
-	generateData(20, "med");
-	generateData(30, "high");
 }
 
 AirTrafficControl::~AirTrafficControl()
@@ -16,20 +13,41 @@ AirTrafficControl::~AirTrafficControl()
 	mPlanes.clear();
 }
 
-void AirTrafficControl::run()
+int AirTrafficControl::run()
 {
-	if(level == "low")
+	generateData(3, "low"); // number of planes is 10 for low congestion, generate all 3 files
+	generateData(20, "med");
+	generateData(30, "high");
+	std::string type;
+
+	while(true)
 	{
-		importData("low");
+		std::cout << "What is the desired congestion level: ";
+		//std::cin >> type;
+		std::cout << std::endl;
+		type = "low";
+		if(type == "low")
+		{
+			importData("low");
+			break;
+		}
+		else if (type == "med")
+		{
+			importData("med");
+			break;
+		}
+		else if (type == "high")
+		{
+			importData("high");
+			break;
+		}
+		else
+		{
+			std::cout << "Incorrect input, try again.\n";
+			continue;
+		}
 	}
-	else if (level == "med")
-	{
-		importData("med");
-	}
-	else if (level == "high")
-	{
-		importData("high");
-	}
+	return 0;
 }
 
 int AirTrafficControl::generateData(int iNumPlanes, std::string type)
@@ -53,7 +71,7 @@ int AirTrafficControl::generateData(int iNumPlanes, std::string type)
 			wPos[0] = 100000;
 			wPos[1] = (std::rand() % 100000 + 1);
 			wPos[2] = (std::rand() % 25000 + 1) + 15000;
-			wVel[0] = -500;
+			wVel[0] = -1000;
 			wVel[1] = 0;
 			wVel[2] = 0;
 			break;
@@ -62,14 +80,14 @@ int AirTrafficControl::generateData(int iNumPlanes, std::string type)
 			wPos[1] = 100000;
 			wPos[2] = (std::rand() % 25000 + 1) + 15000;
 			wVel[0] = 0;
-			wVel[1] = -500;
+			wVel[1] = -1000;
 			wVel[2] = 0;
 			break;
 		case 2:
 			wPos[0] = 0;
 			wPos[1] = (std::rand() % 100000 + 1);
 			wPos[2] = (std::rand() % 25000 + 1) + 15000;
-			wVel[0] = 500;
+			wVel[0] = 1000;
 			wVel[1] = 0;
 			wVel[2] = 0;
 			break;
@@ -78,7 +96,7 @@ int AirTrafficControl::generateData(int iNumPlanes, std::string type)
 			wPos[1] = 0;
 			wPos[2] = (std::rand() % 25000 + 1) + 15000;
 			wVel[0] = 0;
-			wVel[1] = 500;
+			wVel[1] = 1000;
 			wVel[2] = 0;
 			break;
 		}

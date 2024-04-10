@@ -25,7 +25,7 @@ CommSystem::CommSystem(){
 int CommSystem::send_plane(MsgToPlane& msg){
 	string Id = to_string(msg.ID);
 	char const *plane_ID = Id.c_str();
-	msg.header.type = 0x01; //means msg from compsys to plane, change speed
+	msg.header.type = 0x02; //means msg from compsys to plane, change speed
 	serverId = name_open(plane_ID, 0);
 
 	if(serverId == -1){

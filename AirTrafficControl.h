@@ -14,10 +14,9 @@ public:
 
 	int generateData(int, std::string); // generate the plane files, low, med, high
 	int importData(std::string);
-	void run();
+	int run();
 	void printInfo() const;
 
 	std::vector<Plane*> mPlanes;
-	std::string level;
 };
 

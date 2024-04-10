@@ -28,7 +28,7 @@ typedef struct{
 
 typedef struct{
 	msg_header_t header;
-	int ID;
+	int ID,n;
 	std::vector<plane_info> planeList;
 	std::vector<int> violatingPlanes;
 }compSysToDispMsg;
