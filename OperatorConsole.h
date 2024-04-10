@@ -29,9 +29,7 @@ private:
     int server_coid;
 
     void openLogFile(const std::string& path);
-
-    ActionCommand stringToActionCommand(const std::string& commandString);
-    int toComputerSys(requestIdData& data);
+    int toComputerSys(compSysMsg& data);
 
 public:
     OperatorConsole();

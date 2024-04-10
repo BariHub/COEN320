@@ -58,13 +58,19 @@ void OperatorConsole::processUserCommand(const std::string& command) {
     string token;
     vector<string> tokens;
     char delimiter = ' ';
+    compSysMsg dataReq;
+    dataReq.ID = -1;
+    dataReq.n = -1;
+    dataReq.speedx = -1.0;
+    dataReq.speedy = -1.0;
+    dataReq.speedz = -1.0;
 
     while(getline(ss,token,delimiter)){
     	tokens.push_back(token);
     }
 
     if (tokens[0] == "requestInfo") {
-    	requestIdData dataReq;
+
     	dataReq.header.type = 0x03;
     	int id = stoi(tokens[1]);
     	dataReq.ID = id;
@@ -73,7 +79,6 @@ void OperatorConsole::processUserCommand(const std::string& command) {
     }
     else if(tokens[0]  == "changeSpeedx"){
 
-    	requestIdData dataReq;
 		dataReq.header.type = 0x02;
 		int id = stoi(tokens[1]);
 		float speedx = stof(tokens[2]);
@@ -83,7 +88,7 @@ void OperatorConsole::processUserCommand(const std::string& command) {
 
     }
     else if(tokens[0]  == "changeSpeedy"){
-    	requestIdData dataReq;
+
 		dataReq.header.type = 0x02;
 		int id = stoi(tokens[1]);
 		float speedy = stof(tokens[2]);
@@ -93,7 +98,7 @@ void OperatorConsole::processUserCommand(const std::string& command) {
 		toComputerSys(dataReq);
     }
     else if(tokens[0]  == "changeSpeedz"){
-    	requestIdData dataReq;
+    	;
 		dataReq.header.type = 0x02;
 		int id = stoi(tokens[1]);
 		float speedz = stof(tokens[2]);
@@ -102,9 +107,16 @@ void OperatorConsole::processUserCommand(const std::string& command) {
 
 		toComputerSys(dataReq);
     }
+    else if(tokens[0]  == "changeViolFreq"){
+
+		dataReq.header.type = 0x02;
+		int n = stoi(tokens[1]);
+		dataReq.n = n;
+		toComputerSys(dataReq);
+    }
     else{cout<<"Command is invalid!"<<endl;}
 }
-int OperatorConsole::toComputerSys(requestIdData& data) {
+int OperatorConsole::toComputerSys(compSysMsg& data) {
     if ((server_coid = name_open(COMPUTER_SYSTEM_ATTACH_POINT, 0)) == -1) {
         std::cerr << "Operator Console: Failed to connect to server\n";
         return EXIT_FAILURE;

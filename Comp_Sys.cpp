@@ -77,7 +77,7 @@ vector<float> CompSys::NextPos(plane_info &a1, plane_info &a2, int n){
 	dist.push_back(abs(locA1Z-locA2Z));
 	return dist;
 }
-vector <int> CompSys::violationVerification(int n){
+vector <int> CompSys::violationVerification(){
 	vector <int> violatingPlanes;
 	vector <float> distances;
 
@@ -177,7 +177,7 @@ int CompSys::listen(){
 			Msg.planeList = planes;
 			//cout<<"Enter Frequency of violation checks:"<<endl;
 			//cin>>n;
-			Msg.violatingPlanes = violationVerification(n);
+			Msg.violatingPlanes = violationVerification();
 
 			for(int i=0; i<planes.size();i++){
 				string logInfo = "Aircraft " + to_string(planes[i].ID) + " - " + to_string(planes[i].PositionX) + " - " + to_string(planes[i].PositionY) + " - "
@@ -194,15 +194,23 @@ int CompSys::listen(){
 		//messages from operator system to change the velocity of an aircraft
 		else if(planeInfo.header.type == 0x02){
 
-
 			planeMsg.ID = planeInfo.ID;
-			planeMsg.PositionX = planeInfo.positionx;
-			planeMsg.PositionY = planeInfo.positiony;
-			planeMsg.PositionZ = planeInfo.positionz;
-			planeMsg.VelocityX = planeInfo.speedx;
-			planeMsg.VelocityY = planeInfo.speedy;
-			planeMsg.VelocityZ = planeInfo.speedz;
-			sendToCommSys(planeMsg);
+			if(planeInfo.n != -1){
+				n = planeInfo.n;
+			}
+			else if(planeInfo.speedx != 1.0)
+			{
+				planeMsg.VelocityX = planeInfo.speedx;
+				sendToCommSys(planeMsg);
+			}
+			else if(planeInfo.speedy != -1.0){
+				planeMsg.VelocityY = planeInfo.speedy;
+				sendToCommSys(planeMsg);
+			}
+			else if(planeInfo.speedz != -1.0){
+				planeMsg.VelocityZ = planeInfo.speedz;
+				sendToCommSys(planeMsg);
+			}
 		}
 		//Process extra display request
 		else if(planeInfo.header.type == 0x03){

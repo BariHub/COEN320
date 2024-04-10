@@ -28,6 +28,7 @@ class CompSys{
 	int listenId;
 	int rcvrId;
 	int  file;
+	int n;
 
 public:
 	pthread_t thread_id;

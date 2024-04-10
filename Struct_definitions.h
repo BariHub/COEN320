@@ -22,7 +22,7 @@ typedef struct _my_msg {
 
 typedef struct{
 	msg_header_t header;
-	int ID;
+	int ID,n;
 	float positionX, positionY, positionZ, speedx, speedy, speedz;
 }MsgToPlane; // planeMsg
 
@@ -35,7 +35,7 @@ typedef struct{
 
 typedef struct{
 	msg_header_t header;
-	int ID;
+	int ID,n;
 	float positionx, positiony, positionz, speedx ,speedy ,speedz;
 	std::vector<plane_info> planeList;
 }compSysMsg;
@@ -45,12 +45,4 @@ typedef struct{
 	std::vector<plane_info> planeList;
 	std::vector<int> violatingPlanes;
 }DispSysMsg;
-typedef struct{
-	msg_header_t header;
-	int ID;
-	float  speedx ,speedy ,speedz;
-}requestIdData;
-
-
-
 #endif /* STRUCT_DEFINITIONS_H_ */
