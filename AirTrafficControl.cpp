@@ -6,13 +6,54 @@ AirTrafficControl::AirTrafficControl()
 
 AirTrafficControl::~AirTrafficControl()
 {
+	for (Plane* planePtr : mPlanes)
+	{
+		delete planePtr;
+	}
+	mPlanes.clear();
 }
 
-int AirTrafficControl::generateData(int iNumPlanes)
+void AirTrafficControl::run()
+{
+	generateData(10, "low"); // number of planes is 10 for low congestion, generate all 3 files
+	generateData(20, "med");
+	generateData(30, "high");
+	std::string type;
+
+	while(true)
+	{
+		std::cout << "What is the desired congestion level: ";
+		std::cin >> type;
+		std::cout << std::endl;
+		if(type == "low")
+		{
+			importData("low");
+			break;
+		}
+		else if (type == "med")
+		{
+			importData("med");
+			break;
+		}
+		else if (type == "high")
+		{
+			importData("high");
+			break;
+		}
+		else
+		{
+			std::cout << "Incorrect input, try again.\n";
+			continue;
+		}
+	}
+}
+
+int AirTrafficControl::generateData(int iNumPlanes, std::string type)
 {
 	int fd;
 	int size_written;
-	fd = creat("/data/home/qnxuser/planes.txt", S_IWUSR | S_IRUSR | S_IXUSR);
+	std::string path = "/data/home/qnxuser/"+ type +".txt";
+	fd = creat(path.c_str(), S_IWUSR | S_IRUSR | S_IXUSR);
 
 	int wSide = 0;
 	// plane information, ID and its 3d pos and 3d vel
@@ -59,11 +100,10 @@ int AirTrafficControl::generateData(int iNumPlanes)
 		}
 		std::string line = std::to_string(wID) + " " + std::to_string(0) + " " + std::to_string(wPos[0]) + " " + std::to_string(wPos[1])
 				+ " " + std::to_string(wPos[2]) + " " + std::to_string(wVel[0])
-				+ " " + std::to_string(wVel[1]) + " " + std::to_string(wVel[2]) + "\n";
-		std::cout << line.c_str() << std::endl;
+				+ " " + std::to_string(wVel[1]) + " " + std::to_string(wVel[2]) + "\n"; // time is set to 0
 
-		size_written = write(fd, line.c_str(), sizeof(line.size()));
-		if( size_written != sizeof( line.size() ) ) {
+		size_written = write(fd, line.c_str(), line.size());
+		if( size_written != line.size() ) {
 	        perror( "Error writing myfile.dat" );
 	        return EXIT_FAILURE;
 	    }
@@ -74,22 +114,13 @@ int AirTrafficControl::generateData(int iNumPlanes)
 		wSide = wSide % 4;
 	}
 	close(fd);
-	/*for(Plane *wPlane : mPlanes)
-	{
-		if(pthread_join(wPlane->thread_id, NULL) != 0)
-		{
-			std::cerr << "pthread_join error" << std::endl;
-			exit(1);
-		}
-	}*/
-
 	return 0;
 }
 
-int AirTrafficControl::importData()
+int AirTrafficControl::importData(std::string type)
 {
 	std::ifstream wFin;
-	wFin.open("planes.txt", std::ios::in);
+	wFin.open("/data/home/qnxuser/" + type + ".txt", std::ios::in);
 
 	int wID = 0;
 	float wArrivalTime = 0.0;
@@ -111,24 +142,24 @@ int AirTrafficControl::importData()
 	{
 		wFin >> wID >> wArrivalTime >> arrivalPosX >> arrivalPosY >> arrivalPosZ >> arrivalVelX >> arrivalVelY >> arrivalVelZ;
 		Plane* wPlane = new Plane(wID, wArrivalTime, arrivalPosX, arrivalPosY, arrivalPosZ, arrivalVelX, arrivalVelY, arrivalVelZ);
-
+		mPlanes.push_back(wPlane);
 		if (wPlane == nullptr)
 		{
 			std::cerr << "Failed to create plane object" << std::endl;
 			return -1;
 		}
-
-		mPlanes.push_back(wPlane);
 	}
-
 	wFin.close();
 
+	for(Plane *wPlane : mPlanes)
+	{
+		if(pthread_join(wPlane->thread_id, NULL) != 0)
+		{
+			std::cerr << "pthread_join error" << std::endl;
+			exit(1);
+		}
+	}
 	return 0;
-}
-
-int AirTrafficControl::exportData()
-{
-
 }
 
 void AirTrafficControl::printInfo() const

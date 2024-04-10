@@ -12,8 +12,9 @@ public:
 	AirTrafficControl();
 	~AirTrafficControl();
 
-	int generateData(int);
-	int importData();
+	int generateData(int, std::string); // generate the plane files, low, med, high
+	int importData(std::string);
+	void run();
 	void printInfo() const;
 
 	std::vector<Plane*> mPlanes;
