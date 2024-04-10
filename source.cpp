@@ -10,6 +10,20 @@
 int main()
 {
 	AirTrafficControl atc;
+	std::string type;
+	while(true)
+	{
+		std::cout << "What is the desired congestion level: ";
+		std::cin >> type;
+		std::cout << std::endl;
+		if(type == "low" || type == "med" || type == "high")
+		{
+			atc.level = type;
+			break;
+		}
+		std::cout << "Incorrect congestion level, try again.\n";
+	}
+
 	Radar rad;
 	Display displaySystem;
 	CompSys computerSystem;
