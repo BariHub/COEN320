@@ -97,7 +97,7 @@ plane_info Radar::getPlaneData(int planeId) {
     }
 
     name_close(server_coid);
-    cout << "Radar: Data of Plane #" << planeMsg.ID << ": Coords(" << planeMsg.PositionX<< ", " << planeMsg.PositionY << ", " << planeMsg.PositionZ << ")" << endl;
+    //cout << "Radar: Data of Plane #" << planeMsg.ID << ": Coords(" << planeMsg.PositionX<< ", " << planeMsg.PositionY << ", " << planeMsg.PositionZ << ")" << endl;
 
     return planeMsg;
 }
