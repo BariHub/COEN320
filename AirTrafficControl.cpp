@@ -23,8 +23,9 @@ void AirTrafficControl::run()
 	while(true)
 	{
 		std::cout << "What is the desired congestion level: ";
-		std::cin >> type;
+		//std::cin >> type;
 		std::cout << std::endl;
+		type = "low";
 		if(type == "low")
 		{
 			importData("low");

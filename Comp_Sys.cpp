@@ -77,7 +77,7 @@ vector<float> CompSys::NextPos(plane_info &a1, plane_info &a2, int n){
 	dist.push_back(abs(locA1Z-locA2Z));
 	return dist;
 }
-vector <int> CompSys::violationVerification(){
+vector <int> CompSys::violationVerification(int n){
 	vector <int> violatingPlanes;
 	vector <float> distances;
 
@@ -91,7 +91,7 @@ vector <int> CompSys::violationVerification(){
 				violatingPlanes.push_back(planes[j].ID);
 			}
 			//Compute future violations in next 1 minute
-			distances = NextPos(planes[i], planes[j],60);
+			distances = NextPos(planes[i], planes[j],n);
 			if(distances[0] < 3000 || distances[1] < 3000 || distances[2] < 1000){
 				violatingPlanes.push_back(planes[i].ID);
 				violatingPlanes.push_back(planes[j].ID);
@@ -170,11 +170,14 @@ int CompSys::listen(){
 		if (planeInfo.header.type == 0x01) {
 			//save planes info in planes vector on comp system
 			planes = planeInfo.planeList;
+			int n = 60;
 
 			//format aircraft data to be sent to the display system
 			Msg.header = planeInfo.header;
 			Msg.planeList = planes;
-			Msg.violatingPlanes = violationVerification();
+			//cout<<"Enter Frequency of violation checks:"<<endl;
+			//cin>>n;
+			Msg.violatingPlanes = violationVerification(n);
 
 			for(int i=0; i<planes.size();i++){
 				string logInfo = "Aircraft " + to_string(planes[i].ID) + " - " + to_string(planes[i].PositionX) + " - " + to_string(planes[i].PositionY) + " - "
@@ -184,12 +187,8 @@ int CompSys::listen(){
 				int length = logInfo.length();
 				char buffer [length+1];
 				strcpy(buffer, logInfo.c_str());
-				//cout<<logInfo<<endl;
 				loggingTheAirspaceSystem(buffer,length);
 			}
-
-
-
 			sendToDisplay(Msg);
 		}
 		//messages from operator system to change the velocity of an aircraft
@@ -248,8 +247,6 @@ int CompSys::sendToCommSys(plane_info msg){
 }
 void CompSys::loggingTheAirspaceSystem(char* buffer, int length){
 
-	cTimer timer(30,0);
-	//timer.waitTimer();
 	int size_written = write(file, buffer, length);
 	/* test for error              */
 	if( size_written != length ) {

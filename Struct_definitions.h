@@ -45,6 +45,11 @@ typedef struct{
 	std::vector<plane_info> planeList;
 	std::vector<int> violatingPlanes;
 }DispSysMsg;
+typedef struct{
+	msg_header_t header;
+	int ID;
+	float  speedx ,speedy ,speedz;
+}requestIdData;
 
 
 

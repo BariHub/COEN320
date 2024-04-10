@@ -7,7 +7,11 @@
 #include <vector>
 #include <sstream>
 #include <pthread.h>
-
+#include "Struct_definitions.h"
+#include "Plane.h"
+#include "Comp_Sys.h"
+#include "Comms.h"
+#include "AirTrafficControl.h"
 
 class OperatorConsole {
 public:
@@ -15,28 +19,25 @@ public:
         AdjustSpeedx,
         AdjustSpeedy,
         AdjustSpeedz,
-        RequestInfo,
         InvalidCommand
     };
 
 private:
-    ATC& _atc;
-    std::ofstream logFile;
+    int logFile;
     bool isThreadActive;
     pthread_t thread_id;
     int server_coid;
 
     void openLogFile(const std::string& path);
-    static void* userInputThread(void* arg);
-    void processUserCommand(const std::string& command);
+
     ActionCommand stringToActionCommand(const std::string& commandString);
-    int toComputerSys(compsys_msg& data);
+    int toComputerSys(requestIdData& data);
 
 public:
-    OperatorConsole(ATC& atcInstance, const std::string& logFilePath);
+    OperatorConsole();
     ~OperatorConsole();
-
     void log(const std::string& message);
+    void processUserCommand(const std::string& command);
 };
 
 #endif // OPERATORCONSOLE_H
