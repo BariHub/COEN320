@@ -12,7 +12,7 @@ int main()
 	CompSys computerSystem;
 	AirTrafficControl atc;
 
-	atc.generateData(7);
+	atc.run();
 	
 
 
