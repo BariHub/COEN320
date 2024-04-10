@@ -180,10 +180,11 @@ int CompSys::listen(){
 				string logInfo = "Aircraft " + to_string(planes[i].ID) + " - " + to_string(planes[i].PositionX) + " - " + to_string(planes[i].PositionY) + " - "
 						+ to_string(planes[i].PositionZ) + " - " + to_string(planes[i].VelocityX) + " - " + to_string(planes[i].VelocityY) + " - "
 						+ to_string(planes[i].VelocityZ) + "\n";
+
 				int length = logInfo.length();
 				char buffer [length+1];
 				strcpy(buffer, logInfo.c_str());
-				cout<<logInfo<<endl;
+				//cout<<logInfo<<endl;
 				loggingTheAirspaceSystem(buffer,length);
 			}
 
@@ -249,9 +250,9 @@ void CompSys::loggingTheAirspaceSystem(char* buffer, int length){
 
 	cTimer timer(30,0);
 	//timer.waitTimer();
-	int size_written = write(file, buffer, sizeof( buffer) );
+	int size_written = write(file, buffer, length);
 	/* test for error              */
-	if( size_written != sizeof( buffer ) ) {
+	if( size_written != length ) {
 		perror( "Error writing myfile.dat" );
 
 	}
