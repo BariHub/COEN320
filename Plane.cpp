@@ -109,7 +109,7 @@ int Plane::updateLocation()
 	attach = name_attach(NULL, plane_ID, 0);
 	if(attach == NULL)
 	{
-		printf("Could not attach plane ID: %d to channel", mID);
+		//printf("Could not attach plane ID: %d to channel", mID);
 		return EXIT_FAILURE;
 	}
 
@@ -124,7 +124,7 @@ int Plane::updateLocation()
 		this->mPosition[0] += mVelocity[0];
 		this->mPosition[1] += mVelocity[1];
 		this->mPosition[2] += mVelocity[2];
-		printf("Plane: %d %f %f %f \n", mID, mVelocity[0], mVelocity[1], mVelocity[2]);
+		//printf("Plane: %d %f %f %f \n", mID, mVelocity[0], mVelocity[1], mVelocity[2]);
 		info = {mID, mPosition[0], mPosition[1], mPosition[2], mVelocity[0], mVelocity[1], mVelocity[2]};
 		recvID = MsgReceive(attach->chid, &pMsg, sizeof(pMsg), NULL); // see if anything received
 

@@ -9,20 +9,19 @@
 
 int main()
 {
+	AirTrafficControl atc;
+	std::cout << "What is the desired congestion level: ";
+	std::cin >> atc.level;
+	std::cout << std::endl;
+
 	Radar rad;
 	Display displaySystem;
 	CompSys computerSystem;
 	CommSystem CommSys;
-	AirTrafficControl atc;
 	OperatorConsole OP;
 
 	cout<<atc.run()<<endl;
 	
-	/*if (atc.importData() == -1)
-	{
-		std::cerr << "Exiting..." << std::endl;
-		return -1;
-	}*/
 
 	atc.printInfo();
 

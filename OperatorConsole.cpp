@@ -6,7 +6,7 @@ void* userInputThread(void* arg) {
     OperatorConsole* console = static_cast<OperatorConsole*>(arg);
     std::string command;
     while (true) {
-        std::cout << "Operator Console: Enter command: ";
+        //std::cout << "Operator Console: Enter command: ";
         if (std::getline(std::cin, command)) {
             if (command == "exit") {
                 std::cout << "Exiting user input thread..." << std::endl;

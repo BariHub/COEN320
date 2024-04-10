@@ -105,7 +105,7 @@ int Display::DisplayListen(){
 			planeList = msg.planeList;
 			violatingPairs = msg.violatingPlanes;
 			int N = msg.n;
-			cout<<"THE FOLLOWING PAIRS ARE COMMITTING VIOLATIONS IN THE NEXT " << N<< " SECONDS!"<<endl;
+			cout<<"THE FOLLOWING PAIRS ARE COMMITTING VIOLATIONS IN THE NEXT " << N << " SECONDS!"<<endl;
 			for (int i = 0; i < violatingPairs.size(); i+=4) { //to be verified
 			    cout << violatingPairs[i]<<" AND "<<violatingPairs[i+1]<<endl;
 			    violatingPairs[i]=0;
@@ -206,33 +206,37 @@ void Display::gridDisplay(vector<plane_info> planeList){
 	}
 
 	//print all three grids
+	std::cout << "X-Y Axis.\n";
 	for(int i =0; i < x; i++){
 		for(int j=0; j<y; j++){
-			if(gridXY[i][j] == " "){
-				cout<<"|";
+			if(gridXY[i][j] == ""){
+				cout<<".";
 			}
-			else cout<<"|" + gridXY[i][j];
+			else cout<<gridXY[i][j];
 		}
 		cout<<endl;
 	}
 	cout<<"\n\n";
 
+	std::cout << "X-Z Axis.\n";
 	for(int i =0; i < x; i++){
 		for(int j=15; j<z; j++){
-			if(gridXZ[i][j] == " "){
-				cout<<"|";
+			if(gridXZ[i][j] == ""){
+				cout<<".";
 			}
-			else cout<<"|" + gridXZ[i][j];
+			else cout<<gridXZ[i][j];
 		}
 		cout<<endl;
 	}
 	cout<<"\n\n";
+
+	std::cout << "Y-Z Axis.\n";
 	for(int i =0; i < y; i++){
 		for(int j=15; j<z; j++){
-			if(gridYZ[i][j] == " "){
-				cout<<"|";
+			if(gridYZ[i][j] == ""){
+				cout<<".";
 			}
-			else cout<<"|" + gridYZ[i][j];
+			else cout<<gridYZ[i][j];
 		}
 		cout<<endl;
 	}

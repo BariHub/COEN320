@@ -18,5 +18,6 @@ public:
 	void printInfo() const;
 
 	std::vector<Plane*> mPlanes;
+	std::string level;
 };
 

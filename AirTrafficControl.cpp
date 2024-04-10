@@ -2,6 +2,9 @@
 
 AirTrafficControl::AirTrafficControl()
 {
+	generateData(10, "low"); // number of planes is 10 for low congestion, generate all 3 files
+	generateData(20, "med");
+	generateData(30, "high");
 }
 
 AirTrafficControl::~AirTrafficControl()
@@ -15,37 +18,17 @@ AirTrafficControl::~AirTrafficControl()
 
 int AirTrafficControl::run()
 {
-	generateData(3, "low"); // number of planes is 10 for low congestion, generate all 3 files
-	generateData(20, "med");
-	generateData(30, "high");
-	std::string type;
-
-	while(true)
+	if(level == "low")
 	{
-		std::cout << "What is the desired congestion level: ";
-		//std::cin >> type;
-		std::cout << std::endl;
-		type = "low";
-		if(type == "low")
-		{
-			importData("low");
-			break;
-		}
-		else if (type == "med")
-		{
-			importData("med");
-			break;
-		}
-		else if (type == "high")
-		{
-			importData("high");
-			break;
-		}
-		else
-		{
-			std::cout << "Incorrect input, try again.\n";
-			continue;
-		}
+		importData("low");
+	}
+	else if (level == "med")
+	{
+		importData("med");
+	}
+	else if (level == "high")
+	{
+		importData("high");
 	}
 	return 0;
 }
