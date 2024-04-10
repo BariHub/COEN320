@@ -205,6 +205,7 @@ void Display::gridDisplay(vector<plane_info> planeList){
 	}
 
 	//print all three grids
+	std::cout << "X-Y Plane\n";
 	for(int i =0; i < x; i++){
 		for(int j=0; j<y; j++){
 			if(gridXY[i][j] == " "){
@@ -215,7 +216,7 @@ void Display::gridDisplay(vector<plane_info> planeList){
 		cout<<endl;
 	}
 	cout<<"\n\n";
-
+	std::cout << "X-Z Plane\n";
 	for(int i =0; i < x; i++){
 		for(int j=15; j<z; j++){
 			if(gridXZ[i][j] == " "){
@@ -223,16 +224,16 @@ void Display::gridDisplay(vector<plane_info> planeList){
 			}
 			else cout<<"|" + gridXZ[i][j];
 		}
-		cout<<"\n\n";
+		cout<<endl;
 	}
 	cout<<endl;
-
+	std::cout << "Y-Z Plane\n";
 	for(int i =0; i < y; i++){
 		for(int j=15; j<z; j++){
 			if(gridYZ[i][j] == " "){
 				cout<<"|";
 			}
-			else cout<<"|" + gridYZ[i][j];
+			else cout << "|" + gridYZ[i][j];
 		}
 		cout<<endl;
 	}
