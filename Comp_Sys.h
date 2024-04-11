@@ -22,25 +22,25 @@
 
 using namespace std;
 
-class CompSys{
+class CompSys{ // computer system
 
-	int serverId;
+	int serverId; // id of server
 	int listenId;
 	int rcvrId;
-	int  file;
-	int n;
+	int file;
+	int n; // number of seconds
 
 public:
-	pthread_t thread_id;
-	vector<plane_info> planes;
+	pthread_t thread_id; // thread id
+	vector<plane_info> planes; // information of plane
 	CompSys();
 	int sendBaseInfo();
-	int listen();
-	int sendToDisplay(compSysToDispMsg Msg);
-	int sendToCommSys(MsgToPlane msg);
-	vector<float> NextPos(plane_info &a1, plane_info &a2, int n);
-	vector <int> violationVerification();
-	void loggingTheAirspaceSystem(char* buffer, int length);
+	int listen(); // listen for messages
+	int sendToDisplay(compSysToDispMsg Msg); // send information to display
+	int sendToCommSys(MsgToPlane msg); // send info to communication system
+	vector<float> NextPos(plane_info &a1, plane_info &a2, int n); // calculate the distance between two planes, and its future positions after n seconds
+	vector <int> violationVerification(); // calculate violation (if any) of current time, and the next n number of seconds if any
+	void loggingTheAirspaceSystem(char* buffer, int length); // log the planes in airspace
 	virtual ~CompSys();
 };
 

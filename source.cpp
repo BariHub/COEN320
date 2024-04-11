@@ -9,21 +9,21 @@
 
 int main()
 {
-	AirTrafficControl atc;
-	std::cout << "What is the desired congestion level: ";
+	AirTrafficControl atc; // initialization of low, med, high files for congestion into qnxuser
+	std::cout << "What is the desired congestion level: "; // ask for input on congestion level
 	std::cin >> atc.level;
 	std::cout << std::endl;
 
-	Radar rad;
-	Display displaySystem;
-	CompSys computerSystem;
-	CommSystem CommSys;
-	OperatorConsole OP;
+	Radar rad; // instantiation
+	Display displaySystem; // instantiation
+	CompSys computerSystem; // instantiation
+	CommSystem CommSys; // instantiation
+	OperatorConsole OP; // instantiation
 
-	atc.run();
+	atc.run(); // running main program, threads are created for planes based on congestion level chosen
 	
 
-	atc.printInfo();
+	atc.printInfo(); // prints final info of each plane. Its last position recorded upon exiting the air space
 
 	printf("End of script.");
 	return 0;

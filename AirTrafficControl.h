@@ -9,15 +9,15 @@
 class AirTrafficControl
 {
 public:
-	AirTrafficControl();
+	AirTrafficControl(); // initializes all 3 congestion level files, low, med, high
 	~AirTrafficControl();
 
 	int generateData(int, std::string); // generate the plane files, low, med, high
-	int importData(std::string);
-	int run();
-	void printInfo() const;
+	int importData(std::string); // import plane information from files to start the program
+	int run(); // run file with the desired congestion level
+	void printInfo() const; // print info of each plane
 
-	std::vector<Plane*> mPlanes;
-	std::string level;
+	std::vector<Plane*> mPlanes; // vector to hold all planes created
+	std::string level; // level of congestion
 };
 

@@ -8,11 +8,11 @@
 #include "Comp_Sys.h"
 using namespace std;
 
-#define COMPUTER_SYSTEM_ATTACH_POINT "ComputerSystem"
-#define DISPLAY_ATTACH_POINT "Display"
-#define COMMUNICATION_SYSTEM_ATTACH_POINT "CommunicationSystem"
+#define COMPUTER_SYSTEM_ATTACH_POINT "ComputerSystem" // attach point for computer system
+#define DISPLAY_ATTACH_POINT "Display" // attach point for display
+#define COMMUNICATION_SYSTEM_ATTACH_POINT "CommunicationSystem" // attach point for communication
 
-void* compSysStartRoutine(void *args){
+void* compSysStartRoutine(void *args){ // function to be passed into the thread argument to create thread, used for listening
 
 	CompSys& compSys = *(CompSys*) args;
 	compSys.listen();
@@ -20,8 +20,8 @@ void* compSysStartRoutine(void *args){
 }
 
 CompSys::CompSys(){
-	this->file = creat( "/data/home/qnxuser/AirspaceLog.txt", S_IRUSR | S_IWUSR | S_IXUSR );
-	this -> serverId = -1;
+	this->file = creat( "/data/home/qnxuser/AirspaceLog.txt", S_IRUSR | S_IWUSR | S_IXUSR ); // create the airspace log file
+	this -> serverId = -1; // init
 	this -> listenId = -1;
 	this -> rcvrId = -1;
 	plane_info plane;
@@ -33,24 +33,24 @@ CompSys::CompSys(){
 	plane.VelocityY =0.0;
 	plane.VelocityZ = 0.0;
 	fill(planes.begin(), planes.end(), plane);
-	if(pthread_create(&thread_id, NULL, compSysStartRoutine, (void *)this) != 0)
+	if(pthread_create(&thread_id, NULL, compSysStartRoutine, (void *)this) != 0) // create a thread for computer system
 	{
 		cout<<"Failed to start computer system thread!"<<endl;
 	}
 
 }
-//calculate position in 1 minute from current moment
-vector<float> CompSys::NextPos(plane_info &a1, plane_info &a2, int n){
 
+vector<float> CompSys::NextPos(plane_info &a1, plane_info &a2, int n){
+	// calculate the distance between each two planes, and check the distance after n seconds, to predict potential FUTURE collisions/distance
 	vector<float> pos1;
 	vector<float> pos2;
 	vector<float> vel1;
 	vector<float> vel2;
-	pos1.push_back(a1.PositionX);
+	pos1.push_back(a1.PositionX);// position of first plane
 	pos1.push_back(a1.PositionY);
 	pos1.push_back(a1.PositionZ);
 
-	pos2.push_back(a2.PositionX);
+	pos2.push_back(a2.PositionX); // position of second plane
 	pos2.push_back(a2.PositionY);
 	pos2.push_back(a2.PositionZ);
 
@@ -62,8 +62,8 @@ vector<float> CompSys::NextPos(plane_info &a1, plane_info &a2, int n){
 	vel2.push_back(a2.VelocityY);
 	vel2.push_back(a2.VelocityZ);
 
-	//Calculate postition after 60s
-	float locA1X = pos1[0] + vel1[0]*n;
+	//Calculate postition after n seconds
+	float locA1X = pos1[0] + vel1[0]*n; // calculate distance between two planes, after n seconds
 	float locA1Y = pos1[1] + vel1[1]*n;
 	float locA1Z = pos1[2] + vel1[2]*n;
 
@@ -75,9 +75,9 @@ vector<float> CompSys::NextPos(plane_info &a1, plane_info &a2, int n){
 	dist.push_back(abs(locA1X-locA2X));
 	dist.push_back(abs(locA1Y-locA2Y));
 	dist.push_back(abs(locA1Z-locA2Z));
-	return dist;
+	return dist; // return the vector of distance between each two planes
 }
-vector <int> CompSys::violationVerification(){
+vector <int> CompSys::violationVerification(){ // check if two planes violate each other, do that for every plane in space
 	vector <int> violatingPlanes;
 	vector <float> distances;
 
@@ -85,15 +85,15 @@ vector <int> CompSys::violationVerification(){
 		for(int j=i+1;j<planes.size();j++){
 			//compute current violation
 			if(abs(planes[i].PositionX-planes[j].PositionX) < 3000 || abs(planes[i].PositionY-planes[j].PositionY) < 3000 ||
-					abs(planes[i].PositionZ-planes[j].PositionZ) <1000)
+					abs(planes[i].PositionZ-planes[j].PositionZ) <1000) // check if within the boundaries of each other
 			{
-				violatingPlanes.push_back(planes[i].ID);
+				violatingPlanes.push_back(planes[i].ID); // push back the ID's of violating pairs
 				violatingPlanes.push_back(planes[j].ID);
 			}
-			//Compute future violations in next 1 minute
+			//Compute future violations in next n seconds
 			distances = NextPos(planes[i], planes[j],n);
 			if(distances[0] < 3000 || distances[1] < 3000 || distances[2] < 1000){
-				violatingPlanes.push_back(planes[i].ID);
+				violatingPlanes.push_back(planes[i].ID); // push back potential future collision between two planes
 				violatingPlanes.push_back(planes[j].ID);
 			}
 		}
@@ -102,8 +102,8 @@ vector <int> CompSys::violationVerification(){
 }
 
 int CompSys::listen(){
-	compSysMsg planeInfo;
-	compSysToDispMsg Msg;
+	compSysMsg planeInfo; // struct containing plane info
+	compSysToDispMsg Msg; // message info send from computer system to display
 	plane_info planeMsg;
 	MsgToPlane toPlaneMsg;
 	//toPlaneMsg.header.type = 0X01; // TO INDICATE TO COMMUNICATION SYSTEM THIS IS A MESSAGE FROM COMPUTER SYSTEM
@@ -113,8 +113,7 @@ int CompSys::listen(){
 	if ((attach = name_attach(NULL, COMPUTER_SYSTEM_ATTACH_POINT, 0)) == NULL) {
 		perror("Error occurred while creating the channel");
 	}
-
-	/* Do your MsgReceive's here now with the chid */
+	// TAs code
 	while (true) {
 
 		rcvrId = MsgReceive(attach->chid, &planeInfo, sizeof(planeInfo), NULL);
@@ -169,14 +168,14 @@ int CompSys::listen(){
 		//messages from radar first
 		if (planeInfo.header.type == 0x01) {
 			//save planes info in planes vector on comp system
-			planes = planeInfo.planeList;
+			planes = planeInfo.planeList; // list of planes
 
 			//format aircraft data to be sent to the display system
 			Msg.header = planeInfo.header;
 			Msg.planeList = planes;
 			//cout<<"Enter Frequency of violation checks:"<<endl;
 			//cin>>n;
-			Msg.violatingPlanes = violationVerification();
+			Msg.violatingPlanes = violationVerification(); // return IDs of plane violated airspace distance
 
 			for(int i=0; i<planes.size();i++){
 				string logInfo = "Aircraft " + to_string(planes[i].ID) + " - " + to_string(planes[i].PositionX) + " - " + to_string(planes[i].PositionY) + " - "
@@ -186,9 +185,9 @@ int CompSys::listen(){
 				int length = logInfo.length();
 				char buffer [length+1];
 				strcpy(buffer, logInfo.c_str());
-				loggingTheAirspaceSystem(buffer,length);
+				loggingTheAirspaceSystem(buffer,length); // logging of the airspace
 			}
-			sendToDisplay(Msg);
+			sendToDisplay(Msg); // send info to display
 		}
 		//messages from operator system to change the velocity of an aircraft
 		else if(planeInfo.header.type == 0x02){
@@ -230,15 +229,15 @@ int CompSys::listen(){
 		}
 
 
-		MsgReply(rcvrId, EOK, 0, 0);
+		MsgReply(rcvrId, EOK, 0, 0); // send reply that it was received
 
 	}
-	/* Remove the name from the space */
+	/* Remove the name from the channel */
 	name_detach(attach, 0);
 
 	return EXIT_SUCCESS;
 }
-int CompSys::sendToDisplay(compSysToDispMsg Msg){
+int CompSys::sendToDisplay(compSysToDispMsg Msg){ // send necessary information over to display
 	if((serverId = name_open(DISPLAY_ATTACH_POINT, 0))==-1){
 		cout<<"Failed to create connection with Display system!"<<endl;
 		return EXIT_FAILURE;
@@ -251,7 +250,7 @@ int CompSys::sendToDisplay(compSysToDispMsg Msg){
 	return EXIT_SUCCESS;
 }
 
-int CompSys::sendToCommSys(MsgToPlane msg){
+int CompSys::sendToCommSys(MsgToPlane msg){ // send necessary information to communication system
 	if((serverId = name_open(COMMUNICATION_SYSTEM_ATTACH_POINT, 0))==-1){
 		cout<<"Failed to create connection with Communication system!"<<endl;
 		return EXIT_FAILURE;
@@ -263,7 +262,7 @@ int CompSys::sendToCommSys(MsgToPlane msg){
 	name_close(serverId);
 	return EXIT_SUCCESS;
 }
-void CompSys::loggingTheAirspaceSystem(char* buffer, int length){
+void CompSys::loggingTheAirspaceSystem(char* buffer, int length){ // log info to file
 
 	int size_written = write(file, buffer, length);
 	/* test for error              */
