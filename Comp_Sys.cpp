@@ -170,7 +170,6 @@ int CompSys::listen(){
 		if (planeInfo.header.type == 0x01) {
 			//save planes info in planes vector on comp system
 			planes = planeInfo.planeList;
-			int n = 60;
 
 			//format aircraft data to be sent to the display system
 			Msg.header = planeInfo.header;

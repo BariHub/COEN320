@@ -157,8 +157,9 @@ int Plane::updateLocation()
 				printf("PlaneZ: %d %f %f %f \n", mID, mVelocity[0], mVelocity[1], mVelocity[2]);
 			}
 		}
+		MsgReply(recvID, EOK, 0, 0);
 
-		printf("Plane: %d %f %f %f \n", mID, mVelocity[0], mVelocity[1], mVelocity[2]);
+		//printf("Plane: %d %f %f %f \n", mID, mVelocity[0], mVelocity[1], mVelocity[2]);
 		timer.waitTimer(); // after updating, wait until timer is ready for next 1 second interval
 	}
 	mPlanesInAirSpace.erase(std::remove(mPlanesInAirSpace.begin(), mPlanesInAirSpace.end(), this->mID), mPlanesInAirSpace.end());

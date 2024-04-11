@@ -20,7 +20,7 @@ int main()
 	CommSystem CommSys;
 	OperatorConsole OP;
 
-	cout<<atc.run()<<endl;
+	atc.run();
 	
 
 	atc.printInfo();
