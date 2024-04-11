@@ -106,7 +106,7 @@ int CompSys::listen(){
 	compSysToDispMsg Msg;
 	plane_info planeMsg;
 	MsgToPlane toPlaneMsg;
-	toPlaneMsg.header.type = 0X01; // TO INDICATE TO COMMUNICATION SYSTEM THIS IS A MESSAGE FROM COMPUTER SYSTEM
+	//toPlaneMsg.header.type = 0X01; // TO INDICATE TO COMMUNICATION SYSTEM THIS IS A MESSAGE FROM COMPUTER SYSTEM
 	name_attach_t *attach;
 
 
@@ -193,23 +193,34 @@ int CompSys::listen(){
 		}
 		//messages from operator system to change the velocity of an aircraft
 		else if(planeInfo.header.type == 0x02){
-
-			planeMsg.ID = planeInfo.ID;
+			toPlaneMsg.header.type = 0x02;
+			toPlaneMsg.ID = planeInfo.ID;
 			if(planeInfo.n != -1){
 				n = planeInfo.n;
+				Msg.n = n;
+				cout<<n<<endl;
 			}
 			else if(planeInfo.speedx != -1.0)
 			{
-				planeMsg.VelocityX = planeInfo.speedx;
-				sendToCommSys(planeMsg);
+				toPlaneMsg.ID = planeInfo.ID;
+				toPlaneMsg.speedx = planeInfo.speedx;
+				toPlaneMsg.speedy = planeInfo.speedy;
+				toPlaneMsg.speedz = planeInfo.speedz;
+				sendToCommSys(toPlaneMsg);
 			}
 			else if(planeInfo.speedy != -1.0){
-				planeMsg.VelocityY = planeInfo.speedy;
-				sendToCommSys(planeMsg);
+				toPlaneMsg.ID = planeInfo.ID;
+				toPlaneMsg.speedx = planeInfo.speedx;
+				toPlaneMsg.speedy = planeInfo.speedy;
+				toPlaneMsg.speedz = planeInfo.speedz;
+				sendToCommSys(toPlaneMsg);
 			}
 			else if(planeInfo.speedz != -1.0){
-				planeMsg.VelocityZ = planeInfo.speedz;
-				sendToCommSys(planeMsg);
+				toPlaneMsg.ID = planeInfo.ID;
+				toPlaneMsg.speedx = planeInfo.speedx;
+				toPlaneMsg.speedy = planeInfo.speedy;
+				toPlaneMsg.speedz = planeInfo.speedz;
+				sendToCommSys(toPlaneMsg);
 			}
 		}
 		//Process extra display request
@@ -241,7 +252,7 @@ int CompSys::sendToDisplay(compSysToDispMsg Msg){
 	return EXIT_SUCCESS;
 }
 
-int CompSys::sendToCommSys(plane_info msg){
+int CompSys::sendToCommSys(MsgToPlane msg){
 	if((serverId = name_open(COMMUNICATION_SYSTEM_ATTACH_POINT, 0))==-1){
 		cout<<"Failed to create connection with Communication system!"<<endl;
 		return EXIT_FAILURE;

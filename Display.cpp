@@ -119,7 +119,7 @@ int Display::DisplayListen(){
 				if(msg.planeList[i].ID == ID){
 					cout<<"The operator requested more data about Aircraft" << ID
 							<<": Coords(" << msg.planeList[i].PositionX << ", " << msg.planeList[i].PositionY << ", " << msg.planeList[i].PositionZ << ") And velocity :("
-							<<msg.planeList[i].VelocityX <<", "<< msg.planeList[i].VelocityX <<", "<< msg.planeList[i].VelocityZ <<")."<< endl;
+							<<msg.planeList[i].VelocityX <<", "<< msg.planeList[i].VelocityY <<", "<< msg.planeList[i].VelocityZ <<")."<< endl;
 				}
 			}
 		}

@@ -19,6 +19,9 @@ public:
 	void printInfo() const;
 	void setPosition(float, float, float);
 	void setVelocity(float, float, float);
+	void setVelocityX(float);
+	void setVelocityY(float);
+	void setVelocityZ(float);
 	const std::vector<float> getPosition() const;
 	const std::vector<float> getVelocity() const;
 	const int getAirSpaceSize() const;

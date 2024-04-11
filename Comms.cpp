@@ -104,6 +104,7 @@ int CommSystem::fromCompSys(){
 
 		//make sure header type indicates it comes from computer system
 		if (updateMsg.header.type == 0x02) {
+
 			send_plane(updateMsg);
 		}
 

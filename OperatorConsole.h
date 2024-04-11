@@ -24,7 +24,6 @@ public:
 
 private:
     int logFile;
-    bool isThreadActive;
     pthread_t thread_id;
     int server_coid;
 

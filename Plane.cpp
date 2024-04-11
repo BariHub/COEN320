@@ -91,7 +91,15 @@ const std::vector<float> Plane::getPosition() const
 {
 	return this->mPosition;
 }
-
+void Plane::setVelocityX(float x){
+	this->mVelocity[0] = x;
+}
+void Plane::setVelocityY(float y){
+	this->mVelocity[1] = y;
+}
+void Plane::setVelocityZ(float z){
+	this->mVelocity[2] = z;
+}
 const std::vector<float> Plane::getVelocity() const
 {
 	return this->mVelocity;
@@ -109,7 +117,7 @@ int Plane::updateLocation()
 	attach = name_attach(NULL, plane_ID, 0);
 	if(attach == NULL)
 	{
-		//printf("Could not attach plane ID: %d to channel", mID);
+		printf("Could not attach plane ID: %d to channel", mID);
 		return EXIT_FAILURE;
 	}
 
@@ -134,10 +142,23 @@ int Plane::updateLocation()
 		}
 		else if(pMsg.header.type == 0x02) // it is giving the plane info
 		{
+			//printf("Plane: %d %f %f %f \n", mID, mVelocity[0], mVelocity[1], mVelocity[2]);
 			printf("Commands received: speed change (%f, %f, %f)", pMsg.speedx, pMsg.speedy, pMsg.speedz);
-			setVelocity(pMsg.speedx, pMsg.speedy, pMsg.speedz);
+			if(pMsg.speedx != -1.0){
+				setVelocityX(pMsg.speedx);
+				printf("PlaneX: %d %f %f %f \n", mID, mVelocity[0], mVelocity[1], mVelocity[2]);
+			}
+			else if(pMsg.speedy != -1.0){
+				setVelocityY(pMsg.speedy);
+				printf("PlaneY: %d %f %f %f \n", mID, mVelocity[0], mVelocity[1], mVelocity[2]);
+			}
+			else if(pMsg.speedz != -1.0){
+				setVelocityZ(pMsg.speedz);
+				printf("PlaneZ: %d %f %f %f \n", mID, mVelocity[0], mVelocity[1], mVelocity[2]);
+			}
 		}
 
+		printf("Plane: %d %f %f %f \n", mID, mVelocity[0], mVelocity[1], mVelocity[2]);
 		timer.waitTimer(); // after updating, wait until timer is ready for next 1 second interval
 	}
 	mPlanesInAirSpace.erase(std::remove(mPlanesInAirSpace.begin(), mPlanesInAirSpace.end(), this->mID), mPlanesInAirSpace.end());

@@ -3,7 +3,7 @@
 #define COMPUTER_SYSTEM_ATTACH_POINT "ComputerSystem"
 using namespace std;
 void* userInputThread(void* arg) {
-    OperatorConsole* console = static_cast<OperatorConsole*>(arg);
+    OperatorConsole& console = *(OperatorConsole*)(arg);
     std::string command;
     while (true) {
         //std::cout << "Operator Console: Enter command: ";
@@ -13,7 +13,7 @@ void* userInputThread(void* arg) {
                 break;
             }
             if (!command.empty()) {
-                console->processUserCommand(command);
+                console.processUserCommand(command);
             }
         }
     }
@@ -25,17 +25,10 @@ OperatorConsole::OperatorConsole() : server_coid(0) {
 
     if (pthread_create(&thread_id, NULL,userInputThread, this) != 0) {
         std::cerr << "Operator Console: Failed to start input thread\n";
-    } else {
-        isThreadActive = true;
     }
 }
 
 OperatorConsole::~OperatorConsole() {
-
-    if (isThreadActive) {
-        pthread_cancel(thread_id);
-        pthread_join(thread_id, NULL);
-    }
 }
 
 void OperatorConsole::log(const std::string& message) {
@@ -84,6 +77,8 @@ void OperatorConsole::processUserCommand(const std::string& command) {
 		float speedx = stof(tokens[2]);
 		dataReq.ID = id;
 		dataReq.speedx = speedx;
+		dataReq.speedy = -1.0;
+		dataReq.speedz = -1.0;
 		toComputerSys(dataReq);
 
     }
@@ -93,8 +88,9 @@ void OperatorConsole::processUserCommand(const std::string& command) {
 		int id = stoi(tokens[1]);
 		float speedy = stof(tokens[2]);
 		dataReq.ID = id;
+		dataReq.speedx = -1.0;
 		dataReq.speedy = speedy;
-
+		dataReq.speedy = -1.0;
 		toComputerSys(dataReq);
     }
     else if(tokens[0]  == "changeSpeedz"){
@@ -103,9 +99,9 @@ void OperatorConsole::processUserCommand(const std::string& command) {
 		int id = stoi(tokens[1]);
 		float speedz = stof(tokens[2]);
 		dataReq.ID = id;
+		dataReq.speedx = -1.0;
+		dataReq.speedy = -1.0;
 		dataReq.speedz = speedz;
-		cout<<dataReq.ID<<dataReq.speedz<<endl;
-
 		toComputerSys(dataReq);
     }
     else if(tokens[0]  == "changeViolFreq"){
