@@ -1,21 +1,17 @@
-/*
- * Display.cpp
- *
- *  Created on: Apr. 7, 2024
- *      Author: Magym
- */
 #include "Display.h"
 
 
 #define DISPLAY_ATTACH_POINT "Display"
-
+//start routine for display threads
 void* dispStartRoutine(void * arg){
 	Display& displaySystem = *(Display*) arg;
-	displaySystem.DisplayListen();
-	displaySystem.gridDisplay(displaySystem.planeList);
+	displaySystem.DisplayListen(); //listens for information from the computer system
+	displaySystem.gridDisplay(displaySystem.planeList); //displays airspace
 	return NULL;
 }
+//constructor
 Display::Display(){
+	//initialization
 	this -> rcvrId = -1;
 	plane_info plane;
 	plane.ID = 0;
@@ -27,6 +23,7 @@ Display::Display(){
 	plane.VelocityZ = 0.0;
 	fill(planeList.begin(), planeList.end(),plane);
 	fill(violatingPairs.begin(), violatingPairs.end(), 0);
+	//creating thread according to implementation from tutorial
 	if(pthread_create(&thread_id, NULL, dispStartRoutine, (void *)this) != 0)
 		{
 			cout<<"Failed to start computer system thread!"<<endl;
@@ -36,20 +33,17 @@ int Display::DisplayListen(){
 	name_attach_t *attach;
 	compSysToDispMsg msg;  //msg recieved from the computer system
 	DispSysMsg dispMsg; //list of planes to display
-	/* Create a local name (/dev/name/local/...) */
+	// create channel to recieve messages from other systems
 	if ((attach = name_attach(NULL, DISPLAY_ATTACH_POINT, 0)) == NULL) {
 		perror("Error occurred while creating the channel");
 	}
 
-	/* Do your MsgReceive's here now with the chid */
+
 	while (true) {
-		/* Server will block in this call, until a client calls MsgSend to send a message to
-		 * this server through the channel named "myname", which is the name that we set for the channel,
-		 * i.e., the one that we stored at ATTACH_POINT and used in the name_attach call to create the channel. */
+
 		rcvrId = MsgReceive(attach->chid, &msg, sizeof(msg), NULL);
 
-		/* In the above call, the received message will be stored at msg when the server receives a message.
-		 * Moreover, rcvid */
+
 
 		if (rcvrId == -1) {/* Error condition, exit */
 			break;
@@ -59,7 +53,7 @@ int Display::DisplayListen(){
 		dispMsg.planeList = msg.planeList;
 
 
-
+		//Line 57 to 95 is from tutorial  code to treat any errors in the message reception
 		if (rcvrId == 0) {/* Pulse received */
 			switch (msg.header.code) {
 			case _PULSE_CODE_DISCONNECT:
@@ -101,7 +95,7 @@ int Display::DisplayListen(){
 		}
 
 		//Wait for messages from computer system to display data
-		if (msg.header.type == 0x01) {
+		if (msg.header.type == 0x01) { //header indicating message reception from comp system to display a violation that will occur
 			planeList = msg.planeList;
 			violatingPairs = msg.violatingPlanes;
 			int N = msg.n;
@@ -112,10 +106,10 @@ int Display::DisplayListen(){
 			    violatingPairs[i+1]=0;
 			    }
 		}
-		if(msg.header.type == 0x03){
+		if(msg.header.type == 0x03){ // header indicating the operator needs more information about a specific aircraft
 			int ID = msg.ID;
 
-			for(int i = 0; i < msg.planeList.size(); i++){
+			for(int i = 0; i < msg.planeList.size(); i++){// find aircraft with given id and print info on display
 				if(msg.planeList[i].ID == ID){
 					cout<<"The operator requested more data about Aircraft" << ID
 							<<": Coords(" << msg.planeList[i].PositionX << ", " << msg.planeList[i].PositionY << ", " << msg.planeList[i].PositionZ << ") And velocity :("
@@ -123,10 +117,10 @@ int Display::DisplayListen(){
 				}
 			}
 		}
-		MsgReply(rcvrId, EOK, 0, 0);
-		cTimer timer(5,0);
+		MsgReply(rcvrId, EOK, 0, 0); //reply to computer system that message is recieved properly
+		cTimer timer(5,0); //5 seconds timer to display grid every 5 seconds
 
-		gridDisplay(planeList);
+		gridDisplay(planeList); // dispaly airspace
 		timer.waitTimer();
 	}
 
@@ -137,16 +131,16 @@ int Display::DisplayListen(){
 }
 
 void Display::gridDisplay(vector<plane_info> planeList){
-	const int x = 25;
-	const int y = 25;
-	const int z = 40;
-	int xyCellSize = 4000;
-	int zCellSize = 1000;
+	const int x = 25; // x dimension scaled for console display
+	const int y = 25;// y dimension scaled for console display
+	const int z = 40;// z dimension scaled for console display
+	int xyCellSize = 4000; //cellsize to mimic scale
+	int zCellSize = 1000; //cellsize to mimic scale
 
 
 	//creates 3 grids one in X-Y, Y-Z, Z-X
 	//XY PLANE
-	string gridXY[x][y] = {" "};
+	string gridXY[x][y] = {" "};//initialize XY grid
 
 	for(int i=0; i<planeList.size(); i++){
 		for(int j=0; j<x; j++){
@@ -242,5 +236,5 @@ void Display::gridDisplay(vector<plane_info> planeList){
 	}
 	cout<<"\n\n";
 }
-Display::~Display(){}
+Display::~Display(){} //destructor
 

@@ -1,3 +1,8 @@
+/*
+ * Display.h
+ * This system is responsible of all outputs to the console to display the airspace at all times
+ * and the additional requested information for the operator.
+ */
 #ifndef OPERATORCONSOLE_H
 #define OPERATORCONSOLE_H
 
@@ -14,27 +19,17 @@
 #include "AirTrafficControl.h"
 
 class OperatorConsole {
-public:
-    enum ActionCommand {
-        AdjustSpeedx,
-        AdjustSpeedy,
-        AdjustSpeedz,
-        InvalidCommand
-    };
-
 private:
-    int logFile;
-    pthread_t thread_id;
-    int server_coid;
+    int logFile; //log file for commands
+    pthread_t thread_id; //for thread creation
+    int server_coid; //sending commands
 
-    void openLogFile(const std::string& path);
-    int toComputerSys(compSysMsg& data);
-
+    int toComputerSys(compSysMsg& data); //send commands to the computer system
 public:
-    OperatorConsole();
-    ~OperatorConsole();
-    void log(const std::string& message);
-    void processUserCommand(const std::string& command);
+    OperatorConsole();//constructor
+    ~OperatorConsole();//destructor
+    void log(const std::string& message);//logs commands in log file
+    void processUserCommand(const std::string& command); //determines how the user commands are to be sent
 };
 
 #endif // OPERATORCONSOLE_H

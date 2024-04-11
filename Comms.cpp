@@ -2,11 +2,13 @@
 
 using namespace std;
 
+//comms system attach point definition
 #define COMMUNICATION_SYSTEM_ATTACH_POINT "CommunicationSystem"
 
+//communication system start routine for the thread created implementation based on tutorial
 void* commSysStartRoutine(void *args){
 	CommSystem& commSys = *(CommSystem*) args;
-	commSys.fromCompSys();
+	commSys.fromCompSys(); //Communication system keeps waiting to recieve a command from the computer system and processes it
 	return NULL;
 }
 
@@ -14,7 +16,7 @@ void* commSysStartRoutine(void *args){
 CommSystem::CommSystem(){
 	this -> serverId = -1;
 	this -> rcvrId = -1;
-
+	//creating communication system thread, based on tutorial implementation
 	if(pthread_create(&thread_id, NULL, commSysStartRoutine, (void *)this) != 0)
 	{
 		cout<<"Failed to start communication system thread!"<<endl;
@@ -26,13 +28,13 @@ int CommSystem::send_plane(MsgToPlane& msg){
 	string Id = to_string(msg.ID);
 	char const *plane_ID = Id.c_str();
 	msg.header.type = 0x02; //means msg from compsys to plane, change speed
-	serverId = name_open(plane_ID, 0);
+	serverId = name_open(plane_ID, 0); //open communication channel with the plane with given ID
 
 	if(serverId == -1){
 		cout<<"Failed to connect to the aircraft!"<<endl;
 		return EXIT_FAILURE;
 	}
-	if(MsgSend(serverId, &msg, sizeof(msg), 0, 0) == -1){
+	if(MsgSend(serverId, &msg, sizeof(msg), 0, 0) == -1){ //send message to aircraft through open communication channel on line 31
 		printf("Failed to send the message to ID: %d!\n", msg.ID);
 		return EXIT_FAILURE;
 	}
@@ -41,27 +43,23 @@ int CommSystem::send_plane(MsgToPlane& msg){
 	return EXIT_SUCCESS;
 }
 int CommSystem::fromCompSys(){
+	//
 	name_attach_t *attach;
 	MsgToPlane updateMsg;
-
+	//creates a communication channel with the communication system to revieve messages
 	if ((attach = name_attach(NULL, COMMUNICATION_SYSTEM_ATTACH_POINT, 0)) == NULL) {
 		perror("Error occurred while creating the channel in Communications");
 	}
 
-	/* Do your MsgReceive's here now with the chid */
+
 	while (true) {
-		/* Server will block in this call, until a client calls MsgSend to send a message to
-		 * this server through the channel named "myname", which is the name that we set for the channel,
-		 * i.e., the one that we stored at ATTACH_POINT and used in the name_attach call to create the channel. */
-		rcvrId = MsgReceive(attach->chid, &updateMsg, sizeof(updateMsg), NULL);
 
-		/* In the above call, the received message will be stored at planeMsgwhen the server receives a message.
-		 * Moreover, rcvid */
-
+		rcvrId = MsgReceive(attach->chid, &updateMsg, sizeof(updateMsg), NULL); //wait to recieve a message from the computer system
 		if (rcvrId == -1) {/* Error condition, exit */
 			break;
 		}
 
+		//Lines 62 to 89 are from the tutorial implementation to process messages for errors
 		if (rcvrId == 0) {/* Pulse received */
 			switch (updateMsg.header.code) {
 			case _PULSE_CODE_DISCONNECT:
@@ -105,10 +103,10 @@ int CommSystem::fromCompSys(){
 		//make sure header type indicates it comes from computer system
 		if (updateMsg.header.type == 0x02) {
 
-			send_plane(updateMsg);
+			send_plane(updateMsg);//use send_plane function to send the message from the operator system through the computer system to an aircraft
 		}
 
-		MsgReply(rcvrId, EOK, 0, 0);
+		MsgReply(rcvrId, EOK, 0, 0); //reply to computer system that its recieved so it doesnt block and continues operation
 	}
 
 	/* Remove the name from the space */
@@ -116,4 +114,4 @@ int CommSystem::fromCompSys(){
 	return EXIT_SUCCESS;
 }
 
-CommSystem::~CommSystem(){}
+CommSystem::~CommSystem(){}//destructor

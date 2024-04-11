@@ -1,3 +1,5 @@
+/*This system is responsible for the communication system to enable the
+  operator console to communicate information to the aircraft.*/
 #ifndef COMMUNICATION_SYSTEM_H
 #define COMMUNICATION_SYSTEM_H
 
@@ -22,10 +24,10 @@ private:
 	int rcvrId;
 
 public:
-	pthread_t thread_id;
-	CommSystem();
-	int send_plane(MsgToPlane&);
-	int fromCompSys();
-	virtual ~CommSystem();
+	pthread_t thread_id; //used for threading
+	CommSystem(); //constructor
+	int send_plane(MsgToPlane&); //send aircraft a speed change request
+	int fromCompSys(); //recieve a speed change request from the operator system through the computer system
+	virtual ~CommSystem(); // destructor
 };
 #endif

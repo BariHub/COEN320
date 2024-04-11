@@ -1,8 +1,6 @@
 /*
  * Struct_definitions.h
- *
- *  Created on: Mar. 28, 2024
- *      Author: Magym
+ * Here we defined the structs used to hold the data to be transferred between the different systems
  */
 
 #ifndef STRUCT_DEFINITIONS_H_

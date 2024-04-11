@@ -1,8 +1,7 @@
 /*
  * Display.h
- *
- *  Created on: Apr. 7, 2024
- *      Author: Magym
+ * This system is responsible of all outputs to the console to display the airspace at all times
+ * and the additional requested information for the operator.
  */
 #ifndef SRC_DISPLAY_H_
 #define SRC_DISPLAY_H_
@@ -26,16 +25,17 @@
 using namespace std;
 
 class Display{
+	// only recieves no message sending
 	int rcvrId;
 
 public:
-	pthread_t thread_id;
-	vector<plane_info> planeList;
-	vector<int> violatingPairs;
-	Display();
-	int DisplayListen();
-	void gridDisplay(vector<plane_info> planeList);
-	virtual ~Display();
+	pthread_t thread_id; //thread id for thread creation
+	vector<plane_info> planeList; //list of planes in the airspace
+	vector<int> violatingPairs; //pairs of aircraft violating the distance requirements in the airspace
+	Display();//constructor
+	int DisplayListen();//process running on thread waiting for data from computer system
+	void gridDisplay(vector<plane_info> planeList); //displays airspace
+	virtual ~Display(); //destructor
 
 };
 
