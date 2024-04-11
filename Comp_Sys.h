@@ -37,7 +37,7 @@ public:
 	int sendBaseInfo();
 	int listen();
 	int sendToDisplay(compSysToDispMsg Msg);
-	int sendToCommSys(plane_info msg);
+	int sendToCommSys(MsgToPlane msg);
 	vector<float> NextPos(plane_info &a1, plane_info &a2, int n);
 	vector <int> violationVerification();
 	void loggingTheAirspaceSystem(char* buffer, int length);
