@@ -9,6 +9,7 @@
 
 int main()
 {
+	// TEXT FILES FOR CONGESTION LEVEL LOW MED HIGH ARE AUTO GENERATED AND PUT INTO QNXUSER DIRECTORY, NO NEED TO ADD SEPERATE TEXT FILES
 	AirTrafficControl atc; // initialization of low, med, high files for congestion into qnxuser
 	std::cout << "What is the desired congestion level: "; // ask for input on congestion level
 	std::cin >> atc.level;
